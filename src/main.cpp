@@ -1,45 +1,99 @@
-#include "local.h"
+#include "local.hpp"
+
+using namespace std;
+
+//Global Variables
+int NUMBER_OF_ANTS;
+int FOOD_DWELL_TIME;
+int ANT_SMELL_DISTANCE;
+int STRONG_PHEROMONE_THRESHOLD;
+int WEAK_PHEROMONE_THRESHOLD;
+int PHEROMONE_THRESHOLD;
+int ANT_APPETITE;
+int RUN_TIME;
 
 int main(int argc, char *argv[]) {
-	read_constants();
+	read_constants("./conf.txt");
+	printf("NUMBER_OF_ANTS: %d\n", NUMBER_OF_ANTS);
+	printf("FOOD_DWELL_TIME: %d\n", FOOD_DWELL_TIME);
+	printf("ANT_SMELL_DISTANCE: %d\n", ANT_SMELL_DISTANCE);
+	printf("STRONG_PHEROMONE_THRESHOLD: %d\n", STRONG_PHEROMONE_THRESHOLD);
+	printf("WEAK_PHEROMONE_THRESHOLD: %d\n", WEAK_PHEROMONE_THRESHOLD);
+	printf("PHEROMONE_THRESHOLD: %d\n", PHEROMONE_THRESHOLD);
+	printf("ANT_APPETITE: %d\n", ANT_APPETITE);
+	printf("RUN_TIME: %d\n", RUN_TIME);
+	return 0;
 }
 
-int read_constants(char *filename) {
-	FILE *file = fopen(filename, "r");
-	if (file == NULL) {
-		perror("fopen");
-		return 1;
-	}
+void read_constants(string filename)
+{
+    ifstream inputVariableFile(filename);
+    if (!inputVariableFile.good())
+    {
+        perror("Error opening config file");
+        exit(2);
+    }
 
-	int num_helpers, num_spies;
-	if (fscanf(file, "NUM_HELPERS=%d\n", &num_helpers) != 1) {
-		printf("Error reading NUM_HELPERS from file\n");
-		fclose(file);
-		return 1;
-	}
+    string line;
+    while (getline(inputVariableFile, line)) /* Read values and assign to suitable variable */
+    {
+        stringstream sline(line);
+        string variableName;
+        getline(sline, variableName, ' ');
+        string value;
+        getline(sline, value, ' ');
 
-	if (fscanf(file, "NUM_SPIES=%d\n", &num_spies) != 1) {
-		printf("Error reading NUM_SPIES from file\n");
-		fclose(file);
-		return 1;
-	}
-	if (fscanf(file, "WORD_LENGTH=%d\n", &WORD_LENGTH) != 1) {
-		printf("Error reading WORD_LENGTH from file\n");
-		fclose(file);
-		return 1;
-	}
-	if (fscanf(file, "NUM_LINES=%d\n", &NUM_LINES) != 1) {
-		printf("Error reading NUM_LINES from file\n");
-		fclose(file);
-		return 1;
-	}
-	fclose(file);
-
-	// Assign the values to the global variables
-	NUM_HELPERS = num_helpers;
-	NUM_SPIES = num_spies;
-
-	// Rest of your program logic goes here
-
-	return 0;
+        /* remove negative value */
+        if (value[0] == '-')
+        {
+            value = value.substr(1, value.size());
+        }
+        /* skip if not all digits */
+        bool skip = false;
+        for (unsigned i = 0; i < value.size(); i++)
+        {
+            if (!isdigit(value[i]))
+            {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+        {
+            continue;
+        }
+        if (variableName == "NUMBER_OF_ANTS")
+        {
+			NUMBER_OF_ANTS = min(stoi(value), 40);
+        }
+        else if (variableName == "FOOD_DWELL_TIME ")
+        {
+            FOOD_DWELL_TIME = min(stoi(value), 40);
+        }
+        else if (variableName == "ANT_SMELL_DISTANCE")
+        {
+            ANT_SMELL_DISTANCE = min(stoi(value), 40);
+        }
+        else if (variableName == "STRONG_PHEROMONE_THRESHOLD")
+        {
+            STRONG_PHEROMONE_THRESHOLD = min(stoi(value), 40);
+        }
+        else if (variableName == "WEAK_PHEROMONE_THRESHOLD")
+        {
+	        WEAK_PHEROMONE_THRESHOLD = min(stoi(value), 40);
+        }
+        else if (variableName == "PHEROMONE_THRESHOLD")
+        {
+            PHEROMONE_THRESHOLD = min(stoi(value), 40);
+        }
+        else if (variableName == "ANT_APPETITE")
+        {
+            ANT_APPETITE = min(stoi(value), 40);
+        }
+        else if (variableName == "RUN_TIME")
+        {
+	        RUN_TIME = min(stoi(value), 40);
+        }
+    }
+    inputVariableFile.close();
 }
