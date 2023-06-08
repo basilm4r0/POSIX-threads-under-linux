@@ -1,5 +1,5 @@
 CC = g++ # specify the used compiler
-CFLAGS = -Wall # specify the options added on compile.
+CFLAGS = -Wall -pthread # specify the options added on compile.
 # -Wall -> allow all warnings
 
 all: main

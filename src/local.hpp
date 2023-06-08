@@ -21,5 +21,6 @@
 #include <fstream>
 #include <sstream>
 #include <sys/wait.h>
+#include <math.h>
 
 void read_constants(std::string filename);
