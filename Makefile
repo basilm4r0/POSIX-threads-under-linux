@@ -14,6 +14,7 @@ main: ./src/main.cpp ./src/local.hpp
 
 debug: ./src/main.cpp ./src/local.hpp
 	$(CC) $(CFLAGS) -g ./src/main.cpp -o ./bin/main
+	gdb ./bin/main
 
 run:
 	./bin/main
