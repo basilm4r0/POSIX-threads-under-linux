@@ -6,18 +6,18 @@ all: main
 
 # compile parent.cpp
 main: ./src/main.cpp ./src/local.hpp
-	$(CC) $(CFLAGS) ./src/main.cpp -o ./bin/main
+	$(CC) $(CFLAGS) ./src/main.cpp -o ./bin/main.out
 
 #compile opgl.cpp
 #opgl: opgl.cpp
 #	$(CC) opgl.cpp -o opgl -lglut -lGLU -lGL
 
 debug: ./src/main.cpp ./src/local.hpp
-	$(CC) $(CFLAGS) -g ./src/main.cpp -o ./bin/main
-	gdb ./bin/main
+	$(CC) $(CFLAGS) -g ./src/main.cpp -o ./bin/main.out
+	gdb ./bin/main.out
 
 run:
-	./bin/main
+	./bin/main.out
 
 clean:
 	rm -f ./bin/*
