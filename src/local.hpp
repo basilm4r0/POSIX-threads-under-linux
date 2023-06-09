@@ -24,3 +24,7 @@
 #include <math.h>
 
 void read_constants(std::string filename);
+bool hitWall(double, double);
+double randomDouble();
+int randomInt(int a, int b);
+double randomDouble(int a, int b);

@@ -2,8 +2,6 @@
 
 using namespace std;
 
-bool hitWall(double, double);
-
 // Global Variables
 int NUMBER_OF_ANTS;
 int FOOD_DWELL_TIME;
@@ -14,44 +12,54 @@ int PHEROMONE_THRESHOLD;
 int ANT_APPETITE;
 int RUN_TIME;
 
-void *
-antLifeCycle(void *data)
+void *antLifeCycle(void *data)
 {
-    int speed = (rand() % 10) + 1;
+    int speed = 9; //for production change to: (rand() % 10) + 1;
+	cout << "speed: " << speed << endl;
 
-    double x = (rand() % 5) - 2; // rand from -2 -> 2
-    double y = (rand() % 9) - 4; // rand from -4 -> 4
+    double x = randomDouble(-4, 4); // rand from -4 -> 4
+    double y = randomDouble(-2, 2); // rand from -2 -> 2
     //
-    int direction = (rand() % 8) * 45;
+    double direction = ((rand() % 8) * 45) * M_PI / 180; //Angle of direction in rad
     while (1)
     {
         // TODO:  y+=speed*sin(direction) ?
 
-        // TODO: check x , y
-        y += sin(direction);
-        x += cos(direction);
+        cout << "x " << x << " y " << y << " direction " << direction / M_PI * 180 << endl;
 
-        cout << "OUTTER x " << x << " y " << y << endl;
+        usleep(100000 / speed); //for production change to 1000000 / speed
 
-        usleep(10000 / speed);
-        int d = ((rand() % 2) * 2 - 1);
-
-        if (hitWall(x, y))
+		if (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
         {
-            direction += 45 * d; // get random value between -1 for CW and 1 CCW
-            while (hitWall(x + cos(direction), y + sin(direction)))
+        	int d = ((rand() % 2) * 2 - 1); // get random value between -1 for CW and 1 CCW
+            direction += (45 * M_PI / 180) * d; // turn 45 degrees
+			if (direction > (2 * M_PI)) direction -= (2 * M_PI);
+            while (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
             {
-                direction += 45 * d;
+            	direction += (45 * M_PI / 180) * d; // turn 45 degrees
             }
-            y += sin(direction);
-            x += cos(direction);
-            cout << "INNER x " << x << " y " << y << endl;
         }
+        y += 0.01 * sin(direction);
+        x += 0.01 * cos(direction);
     }
 }
 
-int main(int argc, char *argv[])
+// Food creator thread creates food every interval of time
+void *foodCreator(void *data)
 {
+	while (1)
+	{
+		cout << "Spawning food" << endl;
+
+    	double x = randomDouble(-4, 4); // rand from -4 -> 4
+    	double y = randomDouble(-2, 2); // rand from -2 -> 2
+
+		sleep(FOOD_DWELL_TIME);
+	}
+}
+
+
+int main(int argc, char *argv[]) {
     read_constants("./conf.txt");
     printf("NUMBER_OF_ANTS: %d\n", NUMBER_OF_ANTS);
     printf("FOOD_DWELL_TIME: %d\n", FOOD_DWELL_TIME);
@@ -64,21 +72,28 @@ int main(int argc, char *argv[])
 
     srand(getpid());
     int antsId[NUMBER_OF_ANTS];
+	int foodId;
     pthread_t antsThread[NUMBER_OF_ANTS];
+	pthread_t foodThread;
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
         antsId[i] = pthread_create(&antsThread[i], NULL, antLifeCycle, (void *)&i);
     }
-    for (int i = 0; i < NUMBER_OF_ANTS; i++)
-        pthread_join(antsThread[i], NULL);
+	foodId = pthread_create(&foodThread, NULL, foodCreator, 0);
+
+	for (int i = 0; i < NUMBER_OF_ANTS; i++)
+		pthread_join(antsThread[i], NULL);
+
+	pthread_join(foodThread, NULL);
 
     return 0;
 }
 
+//TODO: make area user definable
 bool hitWall(double x, double y)
 {
-    if (x <= -2 || x >= 2 || y <= -4 || y >= 4)
+    if (x <= -4 || x >= 4 || y <= -2 || y >= 2)
     {
         return true;
     }
@@ -126,7 +141,7 @@ void read_constants(string filename)
         {
             NUMBER_OF_ANTS = min(stoi(value), 40);
         }
-        else if (variableName == "FOOD_DWELL_TIME ")
+        else if (variableName == "FOOD_DWELL_TIME")
         {
             FOOD_DWELL_TIME = min(stoi(value), 40);
         }
@@ -156,4 +171,27 @@ void read_constants(string filename)
         }
     }
     inputVariableFile.close();
+}
+double randomDouble()
+{
+    return (double)(rand()) / (double)(RAND_MAX);
+}
+
+int randomInt(int a, int b)
+{
+    if (a > b)
+        return randomInt(b, a);
+    if (a == b)
+        return a;
+    return a + (rand() % (b - a));
+}
+
+double randomDouble(int a, int b)
+{
+    if (a > b)
+        return randomDouble(b, a);
+    if (a == b)
+        return a;
+
+    return (double)randomInt(a, b) + randomDouble();
 }
