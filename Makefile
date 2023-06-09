@@ -2,7 +2,7 @@ CC = g++ # specify the used compiler
 CFLAGS = -Wall -pthread # specify the options added on compile.
 # -Wall -> allow all warnings
 
-all: main
+all: clean main
 
 # compile parent.cpp
 main: ./src/main.cpp ./src/local.hpp
@@ -21,3 +21,4 @@ run:
 
 clean:
 	rm -f ./bin/*
+	mkdir -p ./bin
