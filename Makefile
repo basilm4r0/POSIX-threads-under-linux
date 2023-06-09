@@ -20,5 +20,5 @@ run:
 	./bin/main.out
 
 clean:
-	rm -f ./bin/*
 	mkdir -p ./bin
+	rm -f ./bin/*
