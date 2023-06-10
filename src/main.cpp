@@ -11,6 +11,9 @@ int WEAK_PHEROMONE_THRESHOLD;
 int PHEROMONE_THRESHOLD;
 int ANT_APPETITE;
 int RUN_TIME;
+int PIECES_OF_FOOD;
+
+vector<FOOD> foodPieces;
 
 void *antLifeCycle(void *data)
 {
@@ -42,17 +45,26 @@ void *antLifeCycle(void *data)
         y += 0.01 * sin(direction);
         x += 0.01 * cos(direction);
     }
+    // TODO: Delete food if portions = 0
 }
 
 // Food creator thread creates food every interval of time
 void *foodCreator(void *data)
 {
-	while (1)
+    int n = 2;
+	while (n--)
 	{
 		cout << "Spawning food" << endl;
+        int portions = ceil(100.0 / ANT_APPETITE);
 
-    	double x = randomDouble(-4, 4); // rand from -4 -> 4
-    	double y = randomDouble(-2, 2); // rand from -2 -> 2
+        for(int i=0; i<PIECES_OF_FOOD; i++){
+            FOOD food;
+            food.x = randomDouble(-4, 4); // rand from -4 -> 4
+            food.y = randomDouble(-2, 2); // rand from -2 -> 2
+            food.numOfPortions = portions;
+            food.portions_mutex = PTHREAD_MUTEX_INITIALIZER;
+            foodPieces.push_back(food);
+        }
 
 		sleep(FOOD_DWELL_TIME);
 	}
@@ -69,6 +81,8 @@ int main(int argc, char *argv[]) {
     printf("PHEROMONE_THRESHOLD: %d\n", PHEROMONE_THRESHOLD);
     printf("ANT_APPETITE: %d\n", ANT_APPETITE);
     printf("RUN_TIME: %d\n", RUN_TIME);
+    printf("PIECES_OF_FOOD: %d\n", PIECES_OF_FOOD);
+    
 
     srand(getpid());
     int antsId[NUMBER_OF_ANTS];
@@ -85,7 +99,17 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < NUMBER_OF_ANTS; i++)
 		pthread_join(antsThread[i], NULL);
 
+
+
 	pthread_join(foodThread, NULL);
+
+    // for(int i=0; i<foodPieces.size(); i++){
+    //     cout<< foodPieces[i].x << "\t" << foodPieces[i].y << "\t" << foodPieces[i].numOfPortions<< endl;
+    // }
+
+    // pthread_mutex_lock(&foodPieces[1].portions_mutex);
+    // foodPieces[1].numOfPortions--;
+    // pthread_mutex_unlock(&foodPieces[1].portions_mutex);  
 
     return 0;
 }
@@ -169,6 +193,11 @@ void read_constants(string filename)
         {
             RUN_TIME = min(stoi(value), 40);
         }
+        else if (variableName == "PIECES_OF_FOOD")
+        {
+            PIECES_OF_FOOD = min(stoi(value), 40);
+        }
+        
     }
     inputVariableFile.close();
 }
