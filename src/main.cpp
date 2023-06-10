@@ -117,12 +117,14 @@ void *antLifeCycle(void *data)
             {
                 // GO TO 5 degrees closer to food
 
-                // double turnAmount = 5 * M_PI / 180;
-                // double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
-                // direction = 
+                double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
+				// if (angleToFood - direction > -M_PI || angleToFood - direction < M_PI)
+				// 	direction += 5 * M_PI / 180;
+				// else if (angleToFood - direction < -M_PI || angleToFood - direction > M_PI)
+				// 	direction -= 5 * M_PI / 180;
 
                 ant.direction = direction;
-                
+
                 // SEND WEAK PHERMONE
 
                 ant.phormone = 0; //TOOD: CHECK
