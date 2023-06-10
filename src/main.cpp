@@ -17,47 +17,82 @@ vector<FOOD> foodPieces;
 
 void *antLifeCycle(void *data)
 {
-    int speed = 9; //for production change to: (rand() % 10) + 1;
-	cout << "speed: " << speed << endl;
+    int speed = 9; // for production change to: (rand() % 10) + 1;
+    cout << "speed: " << speed << endl;
 
     double x = randomDouble(-4, 4); // rand from -4 -> 4
     double y = randomDouble(-2, 2); // rand from -2 -> 2
     //
-    double direction = ((rand() % 8) * 45) * M_PI / 180; //Angle of direction in rad
+    double direction = ((rand() % 8) * 45) * M_PI / 180; // Angle of direction in rad
+
     while (1)
     {
         // TODO:  y+=speed*sin(direction) ?
 
         cout << "x " << x << " y " << y << " direction " << direction / M_PI * 180 << endl;
 
-        usleep(100000 / speed); //for production change to 1000000 / speed
+        usleep(100000 / speed); // for production change to 1000000 / speed
 
-		if (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
+        if (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
         {
-        	int d = ((rand() % 2) * 2 - 1); // get random value between -1 for CW and 1 CCW
+            int d = ((rand() % 2) * 2 - 1);     // get random value between -1 for CW and 1 CCW
             direction += (45 * M_PI / 180) * d; // turn 45 degrees
-			if (direction > (2 * M_PI)) direction -= (2 * M_PI);
+            if (direction > (2 * M_PI))
+                direction -= (2 * M_PI);
             while (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
             {
-            	direction += (45 * M_PI / 180) * d; // turn 45 degrees
+                direction += (45 * M_PI / 180) * d; // turn 45 degrees
             }
         }
+
+        // Check if at food
+        for (unsigned i = 0; i < foodPieces.size(); i++)
+        {
+            while (sqrt(pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2)) <= 0.02)
+            {
+                pthread_mutex_lock(&foodPieces[i].portions_mutex);
+                foodPieces[i].numOfPortions--;
+                if(foodPieces[i].numOfPortions == 0){
+                    foodPieces.erase(foodPieces.begin() + i);
+                }else{
+                    pthread_mutex_unlock(&foodPieces[i].portions_mutex);
+                }
+            }
+        }
+        // TODO: Cancel sending phermones
+
+        // Check if food is near
+        for (unsigned i = 0; i < foodPieces.size(); i++)
+        {
+            double distance = pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2);
+            if (distance <= pow(ANT_SMELL_DISTANCE, 2))
+            {
+                direction = atan((y - foodPieces[i].y) / (x - foodPieces[i].x));
+            }
+            // Send Strong phermone
+        }
+
+
+        // TODO: Check if affected by phermone 1, change direction to food
+
+        // TODO: Check if affected by phermone 2, change direct by 5 degrees toward the food
+
         y += 0.01 * sin(direction);
         x += 0.01 * cos(direction);
     }
-    // TODO: Delete food if portions = 0
 }
 
 // Food creator thread creates food every interval of time
 void *foodCreator(void *data)
 {
-    int n = 2;
-	while (n--)
-	{
-		cout << "Spawning food" << endl;
+    int n = 2; // TODO: Remove
+    while (n--)
+    {
+        cout << "Spawning food" << endl;
         int portions = ceil(100.0 / ANT_APPETITE);
 
-        for(int i=0; i<PIECES_OF_FOOD; i++){
+        for (int i = 0; i < PIECES_OF_FOOD; i++)
+        {
             FOOD food;
             food.x = randomDouble(-4, 4); // rand from -4 -> 4
             food.y = randomDouble(-2, 2); // rand from -2 -> 2
@@ -66,12 +101,12 @@ void *foodCreator(void *data)
             foodPieces.push_back(food);
         }
 
-		sleep(FOOD_DWELL_TIME);
-	}
+        sleep(FOOD_DWELL_TIME);
+    }
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     read_constants("./conf.txt");
     printf("NUMBER_OF_ANTS: %d\n", NUMBER_OF_ANTS);
     printf("FOOD_DWELL_TIME: %d\n", FOOD_DWELL_TIME);
@@ -82,26 +117,23 @@ int main(int argc, char *argv[]) {
     printf("ANT_APPETITE: %d\n", ANT_APPETITE);
     printf("RUN_TIME: %d\n", RUN_TIME);
     printf("PIECES_OF_FOOD: %d\n", PIECES_OF_FOOD);
-    
 
     srand(getpid());
     int antsId[NUMBER_OF_ANTS];
-	int foodId;
+    int foodId;
     pthread_t antsThread[NUMBER_OF_ANTS];
-	pthread_t foodThread;
+    pthread_t foodThread;
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
         antsId[i] = pthread_create(&antsThread[i], NULL, antLifeCycle, (void *)&i);
     }
-	foodId = pthread_create(&foodThread, NULL, foodCreator, 0);
+    foodId = pthread_create(&foodThread, NULL, foodCreator, 0);
 
-	for (int i = 0; i < NUMBER_OF_ANTS; i++)
-		pthread_join(antsThread[i], NULL);
+    for (int i = 0; i < NUMBER_OF_ANTS; i++)
+        pthread_join(antsThread[i], NULL);
 
-
-
-	pthread_join(foodThread, NULL);
+    pthread_join(foodThread, NULL);
 
     // for(int i=0; i<foodPieces.size(); i++){
     //     cout<< foodPieces[i].x << "\t" << foodPieces[i].y << "\t" << foodPieces[i].numOfPortions<< endl;
@@ -109,12 +141,12 @@ int main(int argc, char *argv[]) {
 
     // pthread_mutex_lock(&foodPieces[1].portions_mutex);
     // foodPieces[1].numOfPortions--;
-    // pthread_mutex_unlock(&foodPieces[1].portions_mutex);  
+    // pthread_mutex_unlock(&foodPieces[1].portions_mutex);
 
     return 0;
 }
 
-//TODO: make area user definable
+// TODO: make area user definable
 bool hitWall(double x, double y)
 {
     if (x <= -4 || x >= 4 || y <= -2 || y >= 2)
@@ -197,7 +229,6 @@ void read_constants(string filename)
         {
             PIECES_OF_FOOD = min(stoi(value), 40);
         }
-        
     }
     inputVariableFile.close();
 }
