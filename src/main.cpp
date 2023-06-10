@@ -14,6 +14,7 @@ int RUN_TIME;
 int PIECES_OF_FOOD;
 
 vector<FOOD> foodPieces;
+vector<ANT> ants;
 
 void *antLifeCycle(void *data)
 {
@@ -24,6 +25,12 @@ void *antLifeCycle(void *data)
     double y = randomDouble(-2, 2); // rand from -2 -> 2
     //
     double direction = ((rand() % 8) * 45) * M_PI / 180; // Angle of direction in rad
+
+    ANT ant;
+    ant.x = x;
+    ant.y = y;
+    ant.direction = direction;
+    ant.phormone = 0;
 
     while (1)
     {
@@ -52,9 +59,12 @@ void *antLifeCycle(void *data)
             {
                 pthread_mutex_lock(&foodPieces[i].portions_mutex);
                 foodPieces[i].numOfPortions--;
-                if(foodPieces[i].numOfPortions == 0){
+                if (foodPieces[i].numOfPortions == 0)
+                {
                     foodPieces.erase(foodPieces.begin() + i);
-                }else{
+                }
+                else
+                {
                     pthread_mutex_unlock(&foodPieces[i].portions_mutex);
                 }
             }
@@ -68,17 +78,61 @@ void *antLifeCycle(void *data)
             if (distance <= pow(ANT_SMELL_DISTANCE, 2))
             {
                 direction = atan((y - foodPieces[i].y) / (x - foodPieces[i].x));
+                ant.direction = direction;
+                ant.phormone = 1; // strong phermone
+                ant.foodX = foodPieces[i].x;
+                ant.foodY = foodPieces[i].y;
             }
-            // Send Strong phermone
         }
 
+        // TODO: MERGE INTO ONE LOOP
 
-        // TODO: Check if affected by phermone 1, change direction to food
+        // Check if affected by phermone 1, change direction to food
+        for (unsigned i = 0; i < ants.size(); i++)
+        {
+            if(ants[i].phormone != 1){
+                continue;
+            }
+            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
+            if (distance <= pow(STRONG_PHEROMONE_THRESHOLD, 2))
+            {
+                // GO TO FOOD
+                direction = atan((y - ants[i].foodY) / (x - ants[i].foodX));
+                ant.direction = direction;
+                // SEND WEAK PHERMONE
+                ant.phormone = 2;
+                ant.foodX = foodPieces[i].x;
+                ant.foodY = foodPieces[i].y;
+            }
+        }
 
         // TODO: Check if affected by phermone 2, change direct by 5 degrees toward the food
+        for (unsigned i = 0; i < ants.size(); i++)
+        {
+            if(ants[i].phormone != 2){
+                continue;
+            }
+            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
+            if (distance <= pow(WEAK_PHEROMONE_THRESHOLD, 2))
+            {
+                // GO TO 5 degrees closer to food
+
+                // double turnAmount = 5 * M_PI / 180;
+                // double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
+                // direction = 
+
+                ant.direction = direction;
+                
+                // SEND WEAK PHERMONE
+
+                ant.phormone = 0; //TOOD: CHECK
+            }
+        }
 
         y += 0.01 * sin(direction);
         x += 0.01 * cos(direction);
+        ant.x = x;
+        ant.y = y;
     }
 }
 
