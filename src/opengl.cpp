@@ -32,7 +32,7 @@ void initFreeType()
     // Load the font face
 
     // /usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf
-    FT_New_Face(ftLibrary, "./UbuntuMono-R.ttf", 0, &fontFace);
+    FT_New_Face(ftLibrary, "./res/UbuntuMono-R.ttf", 0, &fontFace);
 
     // Set the font size (in pixels)
     FT_Set_Pixel_Sizes(fontFace, 0, fontSize);
