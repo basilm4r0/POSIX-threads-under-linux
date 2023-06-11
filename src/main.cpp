@@ -91,6 +91,7 @@ void *antLifeCycle(void *data)
             }
         }
 
+		// Code after this point was not changed to double pheromone
         // TODO: MERGE INTO ONE LOOP
 
         // Check if affected by strong phermone, change direction to food
