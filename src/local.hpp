@@ -42,7 +42,7 @@ typedef struct
 	double x;
 	double y;
 	double direction;
-	int phormone; // 0 none, 1 strong, 2 week
+	double pheromone;
 	double foodX;
 	double foodY;
 	pthread_mutex_t direction_mutex;

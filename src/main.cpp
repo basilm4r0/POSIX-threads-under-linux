@@ -8,21 +8,24 @@ int FOOD_DWELL_TIME;
 int ANT_SMELL_DISTANCE;
 int STRONG_PHEROMONE_THRESHOLD;
 int WEAK_PHEROMONE_THRESHOLD;
-int PHEROMONE_THRESHOLD;
+double MAX_PHEROMONE_AMOUNT;
 int ANT_APPETITE;
 int RUN_TIME;
 int PIECES_OF_FOOD;
+double HITBOX = 0.02;
 
 vector<FOOD> foodPieces;
 vector<ANT> ants;
 
 void *antLifeCycle(void *data)
 {
+    srand(pthread_self());
+
     int speed = 9; // for production change to: (rand() % 10) + 1;
     cout << "speed: " << speed << endl;
 
-    double x = randomDouble(-4, 4); // rand from -4 -> 4
-    double y = randomDouble(-2, 2); // rand from -2 -> 2
+    double x = randomDouble(-2, 2); // rand from -2 -> 2
+    double y = randomDouble(-1, 1); // rand from -1 -> 1
     //
     double direction = ((rand() % 8) * 45) * M_PI / 180; // Angle of direction in rad
 
@@ -30,7 +33,7 @@ void *antLifeCycle(void *data)
     ant.x = x;
     ant.y = y;
     ant.direction = direction;
-    ant.phormone = 0;
+    ant.pheromone = 0;
 
     while (1)
     {
@@ -44,18 +47,21 @@ void *antLifeCycle(void *data)
         {
             int d = ((rand() % 2) * 2 - 1);     // get random value between -1 for CW and 1 CCW
             direction += (45 * M_PI / 180) * d; // turn 45 degrees
-            if (direction > (2 * M_PI))
+			if (direction > (2 * M_PI))
                 direction -= (2 * M_PI);
+			else if (direction < 0)
+                direction += (2 * M_PI);
             while (hitWall(x + 0.01 * cos(direction), y + 0.01 * sin(direction)))
             {
                 direction += (45 * M_PI / 180) * d; // turn 45 degrees
+        		usleep(100000 / speed); // for production change to 1000000 / speed
             }
         }
 
         // Check if at food
         for (unsigned i = 0; i < foodPieces.size(); i++)
         {
-            while (sqrt(pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2)) <= 0.02)
+            while (sqrt(pow(x - foodPieces[i].x, 2) + pow(y - foodPieces[i].y, 2)) <= HITBOX) //Threshold can be changed
             {
                 pthread_mutex_lock(&foodPieces[i].portions_mutex);
                 foodPieces[i].numOfPortions--;
@@ -74,12 +80,12 @@ void *antLifeCycle(void *data)
         // Check if food is near
         for (unsigned i = 0; i < foodPieces.size(); i++)
         {
-            double distance = pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2);
-            if (distance <= pow(ANT_SMELL_DISTANCE, 2))
+            double distance = sqrt(pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2));
+            if (distance <= ANT_SMELL_DISTANCE)
             {
                 direction = atan((y - foodPieces[i].y) / (x - foodPieces[i].x));
                 ant.direction = direction;
-                ant.phormone = 1; // strong phermone
+                ant.pheromone = MAX_PHEROMONE_AMOUNT < 1 / distance ? MAX_PHEROMONE_AMOUNT : 1 / distance;
                 ant.foodX = foodPieces[i].x;
                 ant.foodY = foodPieces[i].y;
             }
@@ -87,20 +93,23 @@ void *antLifeCycle(void *data)
 
         // TODO: MERGE INTO ONE LOOP
 
-        // Check if affected by phermone 1, change direction to food
+        // Check if affected by strong phermone, change direction to food
         for (unsigned i = 0; i < ants.size(); i++)
         {
-            if(ants[i].phormone != 1){
+            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
+			double recieved_pheromone = ants[i].pheromone / distance;
+
+            if(recieved_pheromone < WEAK_PHEROMONE_THRESHOLD){
                 continue;
             }
-            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
+
             if (distance <= pow(STRONG_PHEROMONE_THRESHOLD, 2))
             {
                 // GO TO FOOD
                 direction = atan((y - ants[i].foodY) / (x - ants[i].foodX));
                 ant.direction = direction;
                 // SEND WEAK PHERMONE
-                ant.phormone = 2;
+                ant.pheromone = 2;
                 ant.foodX = foodPieces[i].x;
                 ant.foodY = foodPieces[i].y;
             }
@@ -109,7 +118,7 @@ void *antLifeCycle(void *data)
         // TODO: Check if affected by phermone 2, change direct by 5 degrees toward the food
         for (unsigned i = 0; i < ants.size(); i++)
         {
-            if(ants[i].phormone != 2){
+            if(ants[i].pheromone != 2){
                 continue;
             }
             double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
@@ -118,16 +127,16 @@ void *antLifeCycle(void *data)
                 // GO TO 5 degrees closer to food
 
                 double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
-				// if (angleToFood - direction < -M_PI || (angleToFood - direction < M_PI) && (angleToFood - direction > 0))
-				// 	direction += 5 * M_PI / 180;
-				// else if ((angleToFood - direction > -M_PI) && (angleToFood - direction < 0) || angleToFood - direction > M_PI)
-				// 	direction -= 5 * M_PI / 180;
+				if (angleToFood - direction < -M_PI || ((angleToFood - direction < M_PI) && (angleToFood - direction > 0)))
+					direction += 5 * M_PI / 180;
+				else
+					direction -= 5 * M_PI / 180;
 
                 ant.direction = direction;
 
                 // SEND WEAK PHERMONE
 
-                ant.phormone = 0; //TOOD: CHECK
+                ant.pheromone = 0; //TOOD: CHECK
             }
         }
 
@@ -141,6 +150,7 @@ void *antLifeCycle(void *data)
 // Food creator thread creates food every interval of time
 void *foodCreator(void *data)
 {
+	srand(pthread_self());
     while (1)
     {
         int portions = ceil(100.0 / ANT_APPETITE);
@@ -148,8 +158,8 @@ void *foodCreator(void *data)
         for (int i = 0; i < PIECES_OF_FOOD; i++)
         {
             FOOD food;
-            food.x = randomDouble(-4, 4); // rand from -4 -> 4
-            food.y = randomDouble(-2, 2); // rand from -2 -> 2
+            food.x = randomDouble(-2, 2); // rand from -4 -> 4
+            food.y = randomDouble(-1, 1); // rand from -2 -> 2
             food.numOfPortions = portions;
             food.portions_mutex = PTHREAD_MUTEX_INITIALIZER;
             foodPieces.push_back(food);
@@ -268,9 +278,9 @@ void read_constants(string filename)
         {
             WEAK_PHEROMONE_THRESHOLD = min(stoi(value), 40);
         }
-        else if (variableName == "PHEROMONE_THRESHOLD")
+        else if (variableName == "MAX_PHEROMONE_AMOUNT")
         {
-            PHEROMONE_THRESHOLD = min(stoi(value), 40);
+            MAX_PHEROMONE_AMOUNT = min(stoi(value), 40);
         }
         else if (variableName == "ANT_APPETITE")
         {
