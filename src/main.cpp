@@ -36,7 +36,7 @@ void *antLifeCycle(void *data)
     {
         // TODO:  y+=speed*sin(direction) ?
 
-        cout << "x " << x << " y " << y << " direction " << direction / M_PI * 180 << endl;
+        //cout << "x " << x << " y " << y << " direction " << direction / M_PI * 180 << endl;
 
         usleep(100000 / speed); // for production change to 1000000 / speed
 
@@ -118,9 +118,9 @@ void *antLifeCycle(void *data)
                 // GO TO 5 degrees closer to food
 
                 double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
-				// if (angleToFood - direction > -M_PI || angleToFood - direction < M_PI)
+				// if (angleToFood - direction < -M_PI || (angleToFood - direction < M_PI) && (angleToFood - direction > 0))
 				// 	direction += 5 * M_PI / 180;
-				// else if (angleToFood - direction < -M_PI || angleToFood - direction > M_PI)
+				// else if ((angleToFood - direction > -M_PI) && (angleToFood - direction < 0) || angleToFood - direction > M_PI)
 				// 	direction -= 5 * M_PI / 180;
 
                 ant.direction = direction;
@@ -141,10 +141,8 @@ void *antLifeCycle(void *data)
 // Food creator thread creates food every interval of time
 void *foodCreator(void *data)
 {
-    int n = 2; // TODO: Remove
-    while (n--)
+    while (1)
     {
-        cout << "Spawning food" << endl;
         int portions = ceil(100.0 / ANT_APPETITE);
 
         for (int i = 0; i < PIECES_OF_FOOD; i++)
@@ -155,6 +153,7 @@ void *foodCreator(void *data)
             food.numOfPortions = portions;
             food.portions_mutex = PTHREAD_MUTEX_INITIALIZER;
             foodPieces.push_back(food);
+        	cout << "Spawned food at x " << food.x << ", y " << food.y << endl;
         }
 
         sleep(FOOD_DWELL_TIME);
