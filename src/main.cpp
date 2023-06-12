@@ -1,5 +1,7 @@
 #include "local.hpp"
 
+#define HITBOX 0.02
+
 using namespace std;
 
 // Global Variables
@@ -12,7 +14,6 @@ double MAX_PHEROMONE_AMOUNT;
 int ANT_APPETITE;
 int RUN_TIME;
 int PIECES_OF_FOOD;
-double HITBOX = 0.02;
 
 vector<FOOD> foodPieces;
 vector<ANT> ants;
@@ -58,10 +59,22 @@ void *antLifeCycle(void *data)
             }
         }
 
-        // Check if at food
+        int closestFood = -1;
+        double closestFoodDistance = 5;
+        // Iterate over food pieces
         for (unsigned i = 0; i < foodPieces.size(); i++)
         {
-            while (sqrt(pow(x - foodPieces[i].x, 2) + pow(y - foodPieces[i].y, 2)) <= HITBOX) //Threshold can be changed
+            double distance = sqrt(pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2));
+
+            // Check if food is within smell distance
+            if (distance <= ANT_SMELL_DISTANCE && distance < closestFoodDistance)
+            {
+                closestFoodDistance = distance;
+                closestFood = i;
+            }
+
+            // Check if on food
+            while (distance <= HITBOX) // Hitbox size can be changed
             {
                 pthread_mutex_lock(&foodPieces[i].portions_mutex);
                 foodPieces[i].numOfPortions--;
@@ -75,69 +88,63 @@ void *antLifeCycle(void *data)
                 }
             }
         }
-        // TODO: Cancel sending phermones
 
-        // Check if food is near
-        for (unsigned i = 0; i < foodPieces.size(); i++)
+        // Update ant if food is within smell distance
+        if (closestFood != -1)
         {
-            double distance = sqrt(pow(x - foodPieces[i].x, 2) + pow(x - foodPieces[i].x, 2));
-            if (distance <= ANT_SMELL_DISTANCE)
-            {
-                direction = atan((y - foodPieces[i].y) / (x - foodPieces[i].x));
-                ant.direction = direction;
-                ant.pheromone = MAX_PHEROMONE_AMOUNT < 1 / distance ? MAX_PHEROMONE_AMOUNT : 1 / distance;
-                ant.foodX = foodPieces[i].x;
-                ant.foodY = foodPieces[i].y;
-            }
+            // GO TO FOOD
+            direction = atan((y - foodPieces[closestFood].y) / (x - foodPieces[closestFood].x));
+            ant.direction = direction;
+            // SEND WEAK PHERMONE
+            ant.pheromone = 2;
+            ant.foodX = foodPieces[closestFood].x;
+            ant.foodY = foodPieces[closestFood].y;
+            ant.pheromone = MAX_PHEROMONE_AMOUNT < 1 / closestFoodDistance ? MAX_PHEROMONE_AMOUNT : 1 / closestFoodDistance;
         }
-
-		// Code after this point was not changed to double pheromone
-        // TODO: MERGE INTO ONE LOOP
-
-        // Check if affected by strong phermone, change direction to food
-        for (unsigned i = 0; i < ants.size(); i++)
+        else
         {
-            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
-			double recieved_pheromone = ants[i].pheromone / distance;
+            // Check if affected by pheromone, change direction
+            int antWithStrongestPheromone;
+            double strongestPheromone = 0;
+            double distanceToAnt = 5;
+            for (unsigned i = 0; i < ants.size(); i++)
+            {
+                double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
+		    	double recieved_pheromone = ants[i].pheromone / distance;
 
-            if(recieved_pheromone < WEAK_PHEROMONE_THRESHOLD){
-                continue;
+                if(recieved_pheromone < WEAK_PHEROMONE_THRESHOLD){
+                    continue;
+                }
+
+                else if(recieved_pheromone > strongestPheromone){
+                    strongestPheromone = recieved_pheromone;
+                    distanceToAnt = distance;
+                    antWithStrongestPheromone = i;
+                }
+
             }
 
-            if (distance <= pow(STRONG_PHEROMONE_THRESHOLD, 2))
+            if (strongestPheromone >= STRONG_PHEROMONE_THRESHOLD)
             {
                 // GO TO FOOD
-                direction = atan((y - ants[i].foodY) / (x - ants[i].foodX));
+                direction = atan((y - ants[antWithStrongestPheromone].foodY) / (x - ants[antWithStrongestPheromone].foodX));
                 ant.direction = direction;
                 // SEND WEAK PHERMONE
-                ant.pheromone = 2;
-                ant.foodX = foodPieces[i].x;
-                ant.foodY = foodPieces[i].y;
+                ant.pheromone = 0.1 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
+                ant.foodX = ants[antWithStrongestPheromone].foodX;
+                ant.foodY = ants[antWithStrongestPheromone].foodY;
             }
-        }
-
-        // TODO: Check if affected by phermone 2, change direct by 5 degrees toward the food
-        for (unsigned i = 0; i < ants.size(); i++)
-        {
-            if(ants[i].pheromone != 2){
-                continue;
-            }
-            double distance = pow(x - ants[i].x, 2) + pow(x - ants[i].x, 2);
-            if (distance <= pow(WEAK_PHEROMONE_THRESHOLD, 2))
+            else
             {
                 // GO TO 5 degrees closer to food
-
-                double angleToFood = atan((y - ants[i].foodY) / (x - ants[i].foodX));
-				if (angleToFood - direction < -M_PI || ((angleToFood - direction < M_PI) && (angleToFood - direction > 0)))
-					direction += 5 * M_PI / 180;
-				else
-					direction -= 5 * M_PI / 180;
+                double angleToFood = atan((y - ants[antWithStrongestPheromone].foodY) / (x - ants[antWithStrongestPheromone].foodX));
+		    	if (angleToFood - direction < -M_PI || ((angleToFood - direction < M_PI) && (angleToFood - direction > 0)))
+		    		direction += 5 * M_PI / 180;
+		    	else
+		    		direction -= 5 * M_PI / 180;
 
                 ant.direction = direction;
-
-                // SEND WEAK PHERMONE
-
-                ant.pheromone = 0; //TOOD: CHECK
+                ant.pheromone = 0; //Don't send pheromone
             }
         }
 
@@ -179,7 +186,7 @@ int main(int argc, char *argv[])
     printf("ANT_SMELL_DISTANCE: %d\n", ANT_SMELL_DISTANCE);
     printf("STRONG_PHEROMONE_THRESHOLD: %d\n", STRONG_PHEROMONE_THRESHOLD);
     printf("WEAK_PHEROMONE_THRESHOLD: %d\n", WEAK_PHEROMONE_THRESHOLD);
-    printf("PHEROMONE_THRESHOLD: %d\n", PHEROMONE_THRESHOLD);
+    printf("MAX_PHEROMONE_AMOUNT: %f\n", MAX_PHEROMONE_AMOUNT);
     printf("ANT_APPETITE: %d\n", ANT_APPETITE);
     printf("RUN_TIME: %d\n", RUN_TIME);
     printf("PIECES_OF_FOOD: %d\n", PIECES_OF_FOOD);
