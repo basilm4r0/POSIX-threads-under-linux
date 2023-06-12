@@ -10,6 +10,7 @@ using clk = std::chrono::system_clock;
 using sec = std::chrono::duration<int>;
 using namespace std;
 
+const float PI = 3.14159265f;
 int WIN_HEIGHT;
 int WIN_WIDTH;
 int TIME_BAR;
@@ -164,6 +165,134 @@ void drawRectangle(float x, float y, float xLength, float yLength, bool drawBord
     }
 }
 
+void drawOval(float xRadius, float yRadius, int numSegments)
+{
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < numSegments; i++)
+    {
+        float angle = 2.0f * PI * static_cast<float>(i) / numSegments;
+        float x = xRadius * cos(angle);
+        float y = yRadius * sin(angle);
+        glVertex2f(x, y);
+    }
+    glEnd();
+}
+
+void drawAnt()
+{
+    // Back
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawOval(0.17f, 0.25f, 100);
+
+    // Middle
+    glTranslatef(0.0f, 0.38f, 0.0f);
+    drawOval(0.13f, 0.15f, 100);
+
+    // Head
+    glTranslatef(0.0f, 0.3f, 0.0f);
+    drawOval(0.13f, 0.17f, 100);
+
+    // Legs
+    glColor3f(0.0f, 0.0f, 0.0f); // Black color
+    float legOffset = 0;
+    float legHeight = 0.45f;
+    float legWidth = 0.03f;
+
+    glPushMatrix();
+    glTranslatef(-legOffset, -0.2f, 0.0f);       // Translate to the left leg position
+    glRotatef(35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.25, -0.68, 1.0f);                           // Translate to the end of the leg
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glRotatef(60.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, 0.3, legWidth);           // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.34, -0.48, 1.0f);                           // Translate to the end of the leg
+    glRotatef(10.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glRotatef(90.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.8f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, 0.2, legWidth);           // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.29, -0.12, 1.0f);                           // Translate to the end of the leg
+    glRotatef(150.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    //////////////////////
+
+    glPushMatrix();
+    glTranslatef(legOffset, -0.2f, 0.0f);       // Translate to the left leg position
+    glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.25, -0.68, 1.0f);                           // Translate to the end of the leg
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glRotatef(-60.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, 0.3, legWidth);           // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.34, -0.48, 1.0f);                           // Translate to the end of the leg
+    glRotatef(-10.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.8f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, 0.2, legWidth);           // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.29, -0.12, 1.0f);                           // Translate to the end of the leg
+    glRotatef(-150.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    /////////////////////////////////
+    
+    
+}
+
 void modifyMatrix()
 {
     glMatrixMode(GL_PROJECTION);
@@ -192,7 +321,8 @@ void display()
     // Render the text at position (0, 0)
     renderText("Hello, World!", 0, 0, 24);
 
-    drawCircle(0.05, 0.5, 0.5);
+    // drawCircle(0.05, 0.5, 0.5);
+    drawAnt();
     glutSwapBuffers();
 }
 
