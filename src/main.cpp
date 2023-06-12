@@ -38,8 +38,6 @@ void *antLifeCycle(void *data)
 
     while (1)
     {
-        // TODO:  y+=speed*sin(direction) ?
-
         //cout << "x " << x << " y " << y << " direction " << direction / M_PI * 180 << endl;
 
         usleep(100000 / speed); // for production change to 1000000 / speed
@@ -96,7 +94,6 @@ void *antLifeCycle(void *data)
             direction = atan((y - foodPieces[closestFood].y) / (x - foodPieces[closestFood].x));
             ant.direction = direction;
             // SEND WEAK PHERMONE
-            ant.pheromone = 2;
             ant.foodX = foodPieces[closestFood].x;
             ant.foodY = foodPieces[closestFood].y;
             ant.pheromone = MAX_PHEROMONE_AMOUNT < 1 / closestFoodDistance ? MAX_PHEROMONE_AMOUNT : 1 / closestFoodDistance;
@@ -130,7 +127,7 @@ void *antLifeCycle(void *data)
                 direction = atan((y - ants[antWithStrongestPheromone].foodY) / (x - ants[antWithStrongestPheromone].foodX));
                 ant.direction = direction;
                 // SEND WEAK PHERMONE
-                ant.pheromone = 0.1 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
+                ant.pheromone = 0.2 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
                 ant.foodX = ants[antWithStrongestPheromone].foodX;
                 ant.foodY = ants[antWithStrongestPheromone].foodY;
             }
