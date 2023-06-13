@@ -28,6 +28,7 @@ bool hitWall(double, double);
 double randomDouble();
 int randomInt(int a, int b);
 double randomDouble(int a, int b);
+double findAngle(double x1, double y1, double x2, double y2);
 
 typedef struct
 {
