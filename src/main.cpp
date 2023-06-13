@@ -169,14 +169,6 @@ void *antLifeCycle(void *data)
 		}
 		pthread_mutex_unlock(&food_list_mutex);
 
-		// if (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
-		// {
-		// 	int d = ((rand() % 2) * 2 - 1);	 // get random value between -1 for CW and 1 CCW
-		// 	while (hitWall(ant.x + STEP_SIZE * cos(ant.direction + (45 * M_PI / 180) * d), ant.y + STEP_SIZE * sin(ant.direction + (45 * M_PI / 180) * d)))
-		// 		ant.direction += (45 * M_PI / 180) * d; // turn 45 degrees
-
-		// 	usleep(100000 / speed);			 // for production change to 1000000 / speed
-		// }
 		if (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
         {
             int d = ((rand() % 2) * 2 - 1);     // get random value between -1 for CW and 1 CCW
@@ -335,11 +327,11 @@ void read_constants(string filename)
 		}
 		if (variableName == "NUMBER_OF_ANTS")
 		{
-			NUMBER_OF_ANTS = min(stoi(value), 40);
+			NUMBER_OF_ANTS = stoi(value);
 		}
 		else if (variableName == "FOOD_DWELL_TIME")
 		{
-			FOOD_DWELL_TIME = min(stoi(value), 40);
+			FOOD_DWELL_TIME = stoi(value);
 		}
 		else if (variableName == "ANT_SMELL_DISTANCE")
 		{
@@ -347,11 +339,11 @@ void read_constants(string filename)
 		}
 		else if (variableName == "STRONG_PHEROMONE_THRESHOLD")
 		{
-			STRONG_PHEROMONE_THRESHOLD = min(stoi(value), 40);
+			STRONG_PHEROMONE_THRESHOLD = stoi(value);
 		}
 		else if (variableName == "WEAK_PHEROMONE_THRESHOLD")
 		{
-			WEAK_PHEROMONE_THRESHOLD = min(stoi(value), 40);
+			WEAK_PHEROMONE_THRESHOLD = stoi(value);
 		}
 		else if (variableName == "MAX_PHEROMONE_AMOUNT")
 		{
@@ -359,15 +351,15 @@ void read_constants(string filename)
 		}
 		else if (variableName == "ANT_APPETITE")
 		{
-			ANT_APPETITE = min(stoi(value), 40);
+			ANT_APPETITE = stoi(value);
 		}
 		else if (variableName == "RUN_TIME")
 		{
-			RUN_TIME = min(stoi(value), 40);
+			RUN_TIME = stoi(value);
 		}
 		else if (variableName == "PIECES_OF_FOOD")
 		{
-			PIECES_OF_FOOD = min(stoi(value), 40);
+			PIECES_OF_FOOD = stoi(value);
 		}
 	}
 	inputVariableFile.close();
