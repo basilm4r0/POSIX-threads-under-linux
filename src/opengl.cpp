@@ -180,26 +180,27 @@ void drawOval(float xRadius, float yRadius, int numSegments)
 
 void drawAnt()
 {
+    double scaleDown = 15;
     // Back
     glColor3f(0.0f, 0.0f, 0.0f);
-    drawOval(0.17f, 0.25f, 100);
+    drawOval(0.17f/scaleDown, 0.25f/scaleDown, 100);
 
     // Middle
-    glTranslatef(0.0f, 0.38f, 0.0f);
-    drawOval(0.13f, 0.15f, 100);
+    glTranslatef(0.0f, 0.38f/scaleDown, 0.0f);
+    drawOval(0.13f/scaleDown, 0.15f/scaleDown, 100);
 
     // Head
-    glTranslatef(0.0f, 0.3f, 0.0f);
-    drawOval(0.13f, 0.17f, 100);
+    glTranslatef(0.0f, 0.3f/scaleDown, 0.0f);
+    drawOval(0.13f/scaleDown, 0.17f/scaleDown, 100);
 
     // Legs
     glColor3f(0.0f, 0.0f, 0.0f); // Black color
     float legOffset = 0;
-    float legHeight = 0.45f;
-    float legWidth = 0.03f;
+    float legHeight = 0.45f/scaleDown;
+    float legWidth = 0.03f/scaleDown;
 
     glPushMatrix();
-    glTranslatef(-legOffset, -0.2f, 0.0f);       // Translate to the left leg position
+    glTranslatef(-legOffset, -0.2f/scaleDown, 0.0f);       // Translate to the left leg position
     glRotatef(35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
     glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
@@ -207,36 +208,36 @@ void drawAnt()
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0.25, -0.68, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(0.25/scaleDown, -0.68/scaleDown, 1.0f);                           // Translate to the end of the leg
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glTranslatef(0, -0.2f/scaleDown, 0.0f);                // Translate to the left leg position
     glRotatef(60.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
-    glScalef(legWidth, 0.3, legWidth);           // Scale the leg dimensions
+    glScalef(legWidth, 0.3/scaleDown, legWidth);           // Scale the leg dimensions
     glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0.34, -0.48, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(0.34/scaleDown, -0.48/scaleDown, 1.0f);                           // Translate to the end of the leg
     glRotatef(10.0f, 0.0f, 0.0f, 1.0f);
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glTranslatef(0, -0.2f/scaleDown, 0.0f);                // Translate to the left leg position
     glRotatef(90.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.8f, 0.0f); // Translate to the center of the leg
-    glScalef(legWidth, 0.2, legWidth);           // Scale the leg dimensions
+    glScalef(legWidth, 0.2/scaleDown, legWidth);           // Scale the leg dimensions
     glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0.29, -0.12, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(0.29/scaleDown, -0.12/scaleDown, 1.0f);                           // Translate to the end of the leg
     glRotatef(150.0f, 0.0f, 0.0f, 1.0f);
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
@@ -245,7 +246,7 @@ void drawAnt()
     //////////////////////
 
     glPushMatrix();
-    glTranslatef(legOffset, -0.2f, 0.0f);       // Translate to the left leg position
+    glTranslatef(legOffset, -0.2f/scaleDown, 0.0f);       // Translate to the left leg position
     glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
     glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
@@ -253,36 +254,36 @@ void drawAnt()
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-0.25, -0.68, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(-0.25/scaleDown, -0.68/scaleDown, 1.0f);                           // Translate to the end of the leg
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glTranslatef(0, -0.2f/scaleDown, 0.0f);                // Translate to the left leg position
     glRotatef(-60.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
-    glScalef(legWidth, 0.3, legWidth);           // Scale the leg dimensions
+    glScalef(legWidth, 0.3/scaleDown, legWidth);           // Scale the leg dimensions
     glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-0.34, -0.48, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(-0.34/scaleDown, -0.48/scaleDown, 1.0f);                           // Translate to the end of the leg
     glRotatef(-10.0f, 0.0f, 0.0f, 1.0f);
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(0, -0.2f, 0.0f);                // Translate to the left leg position
+    glTranslatef(0, -0.2f/scaleDown, 0.0f);                // Translate to the left leg position
     glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
     glTranslatef(0.0f, -legHeight / 2.8f, 0.0f); // Translate to the center of the leg
-    glScalef(legWidth, 0.2, legWidth);           // Scale the leg dimensions
+    glScalef(legWidth, 0.2/scaleDown, legWidth);           // Scale the leg dimensions
     glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-0.29, -0.12, 1.0f);                           // Translate to the end of the leg
+    glTranslatef(-0.29/scaleDown, -0.12/scaleDown, 1.0f);                           // Translate to the end of the leg
     glRotatef(-150.0f, 0.0f, 0.0f, 1.0f);
     glScalef(legWidth / 1.1, legHeight / 2.0, legWidth / 1.1); // Scale the dimensions for the vertical line
     glutSolidCube(1.0f);                                       // Cube-shaped vertical line
@@ -290,7 +291,19 @@ void drawAnt()
 
     /////////////////////////////////
     
-    
+    glPushMatrix();
+    glTranslatef(0.13/scaleDown, 0.2/scaleDown, 1.0f);                           // Translate to the end of the leg
+    glRotatef(150.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.5, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.13/scaleDown, 0.2/scaleDown, 1.0f);                           // Translate to the end of the leg
+    glRotatef(-150.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(legWidth / 1.1, legHeight / 2.5, legWidth / 1.1); // Scale the dimensions for the vertical line
+    glutSolidCube(1.0f);                                       // Cube-shaped vertical line
+    glPopMatrix();
 }
 
 void modifyMatrix()
@@ -319,7 +332,7 @@ void display()
     renderText(TIME, 0, 1.12, 24);
 
     // Render the text at position (0, 0)
-    renderText("Hello, World!", 0, 0, 24);
+    // renderText("Hello, World!", 0, 0, 24);
 
     // drawCircle(0.05, 0.5, 0.5);
     drawAnt();
