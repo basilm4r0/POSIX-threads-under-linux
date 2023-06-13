@@ -5,8 +5,8 @@ CFLAGS = -Wall -pthread # specify the options added on compile.
 all: clean main opengl
 
 # compile parent.cpp
-main: ./src/main.cpp ./src/local.hpp
-	$(CC) $(CFLAGS) ./src/main.cpp -o ./bin/main.out
+main: ./src/main.cpp ./src/local.hpp ./src/opgl.hpp
+	$(CC) $(CFLAGS) ./src/main.cpp -o ./bin/main.out -lglut -lGLU -lGL -lfreetype -I./res/freetype2 -I./res/libpng16
 
 opengl: ./src/opengl.cpp
 	$(CC) $(CFLAGS) ./src/opengl.cpp -o ./bin/opengl.out -lglut -lGLU -lGL -lfreetype -I./res/freetype2 -I./res/libpng16
