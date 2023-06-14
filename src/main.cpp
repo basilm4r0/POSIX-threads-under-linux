@@ -427,6 +427,7 @@ void display()
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
         drawCircle(0.01, ants[i].x, ants[i].y);
+        // drawAnt(ants[i].x, ants[i].y, (ants[i].direction * M_PI / 180) + 90);
     }
     glColor3f(1.0f, 1.0f, 1.0f);
     for (int i = 0; i < foodPieces.size(); i++)
