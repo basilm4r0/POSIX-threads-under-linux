@@ -85,7 +85,7 @@ void *antLifeCycle(void *data)
                 if (foodPieces[closestFood].numOfPortions <= 0)
                 {
                     pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
-                    for (int k = 0; k < NUMBER_OF_ANTS ; k++) 
+                    for (int k = 0; k < NUMBER_OF_ANTS; k++)
                     {
                         if (ants[k].foodX == foodPieces[closestFood].x && ants[k].foodY == foodPieces[closestFood].y)
                         {
@@ -393,18 +393,9 @@ void display()
 
     glColor3f(0.0f, 0.0f, 0.0f);
 
-    glColor3f(1.0f, 0.0f, 0.0f);
-    drawRectangle(0, 0, 10, 10, true);
-    glColor3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.0f, 0.78f, 0.0f);
     drawRectangle(0, 0, 10, 2, true);
 
-    renderText(TIME, 0, 1.12, 24);
-
-    // Render the text at position (0, 0)
-    // renderText("Hello, World!", 0, 0, 24);
-
-    // drawCircle(0.05, 0.5, 0.5);
-    // drawAnt();
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
         // drawCircle(0.01, ants[i].x, ants[i].y);
@@ -421,6 +412,11 @@ void display()
         drawRectangle(foodPieces[i].x, foodPieces[i].y, length, length, false);
     }
     pthread_mutex_unlock(&food_list_mutex);
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawRectangle(0, 1.25, 4, 0.5, false);
+    renderText(TIME, 0, 1.15, 24);
+
     glutSwapBuffers();
 }
 
