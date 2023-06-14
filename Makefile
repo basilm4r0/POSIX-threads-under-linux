@@ -16,7 +16,7 @@ opengl: ./src/opengl.cpp
 #	$(CC) opgl.cpp -o opgl -lglut -lGLU -lGL
 
 debug: ./src/main.cpp ./src/local.hpp
-	$(CC) $(CFLAGS) -g ./src/main.cpp -o ./bin/main.out
+	$(CC) $(CFLAGS) -g ./src/main.cpp -o ./bin/main.out -lglut -lGLU -lGL -lfreetype -I./res/freetype2 -I./res/libpng16
 	gdb ./bin/main.out
 
 run:
