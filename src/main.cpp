@@ -45,7 +45,7 @@ void *antLifeCycle(void *data)
 
     while (1)
     {
-        //cout << "x " << ant.x << " y " << ant.y << " direction " << ant.direction / M_PI * 180 << " pheromone " << ant.pheromone << endl;
+        // cout << "x " << ant.x << " y " << ant.y << " direction " << ant.direction / M_PI * 180 << " pheromone " << ant.pheromone << endl;
 
         usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
 
@@ -72,6 +72,7 @@ void *antLifeCycle(void *data)
                 closestFood = i;
             }
         }
+        // pthread_mutex_unlock(&food_list_mutex);
 
         // Check if on food
         if (isOnFood)
@@ -100,7 +101,7 @@ void *antLifeCycle(void *data)
                     {
                         pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
                     }
-                    pthread_mutex_lock(&food_list_mutex); //TODO where to put? caused other ants to stop on delay when the mutex was for all the code
+                    pthread_mutex_lock(&food_list_mutex); // TODO where to put? caused other ants to stop on delay when the mutex was for all the code
                     foodPieces.erase(foodPieces.begin() + closestFood);
                     pthread_mutex_unlock(&food_list_mutex);
                     ant.pheromone = 0;
@@ -159,7 +160,7 @@ void *antLifeCycle(void *data)
             if (strongestPheromone >= STRONG_PHEROMONE_THRESHOLD)
             {
                 // GO TO FOOD
-                ant.direction = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodY, ants[antWithStrongestPheromone].foodX);
+                ant.direction = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodX, ants[antWithStrongestPheromone].foodY);
                 // TODO: to change
                 // ant.pheromone = 0.2 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
                 ant.pheromone = 1 / (100 * max(distanceToAnt, HITBOX));
@@ -169,8 +170,11 @@ void *antLifeCycle(void *data)
             else if (antWithStrongestPheromone != -1)
             {
                 // GO TO 5 degrees closer to food
-                double angleToFood = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodY, ants[antWithStrongestPheromone].foodX);
-                if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
+                double angleToFood = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodX, ants[antWithStrongestPheromone].foodY);
+                if (abs(angleToFood - ant.direction) < 5 * M_PI / 180)
+                {
+                }
+                else if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
                     ant.direction += 5 * M_PI / 180;
                 else
                     ant.direction -= 5 * M_PI / 180;
@@ -185,17 +189,17 @@ void *antLifeCycle(void *data)
         }
         // pthread_mutex_unlock(&food_list_mutex);
 
-       int d = ((rand() % 2) * 2 - 1);         // get random value between -1 for CW and 1 CCW
-       while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
-       {
-           ant.direction += (135 * M_PI / 180) * d; // turn 45 degrees
-           if (ant.direction > (2 * M_PI))
-               ant.direction -= (2 * M_PI);
-           else if (ant.direction < 0)
-               ant.direction += (2 * M_PI);
-           usleep(16666 / (1 + 0.1 * speed));                 // for production change to 1000000 / speed
-           cout << "WEEEEEE" << endl;
-       }
+        int d = ((rand() % 2) * 2 - 1); // get random value between -1 for CW and 1 CCW
+        while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
+        {
+            ant.direction += (135 * M_PI / 180) * d; // turn 45 degrees TODO
+            if (ant.direction > (2 * M_PI))
+                ant.direction -= (2 * M_PI);
+            else if (ant.direction < 0)
+                ant.direction += (2 * M_PI);
+            usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
+            cout << "WEEEEEE" << endl;
+        }
 
         if (ant.direction >= (2 * M_PI))
             ant.direction -= (2 * M_PI);
@@ -213,7 +217,6 @@ void *antLifeCycle(void *data)
         ants[index].foodY = ant.foodY;
         // pthread_mutex_unlock(&ants_list_mutex);
     }
-
 }
 
 // Food creator thread creates food every interval of time
@@ -419,16 +422,18 @@ void display()
     // drawAnt();
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
-        //drawCircle(0.01, ants[i].x, ants[i].y);
-        // cout<<ants[i].direction<<"\t"<<(ants[i].direction *180.0 / M_PI) + 90<<endl;
+        // drawCircle(0.01, ants[i].x, ants[i].y);
+        //  cout<<ants[i].direction<<"\t"<<(ants[i].direction *180.0 / M_PI) + 90<<endl;
         drawAnt(ants[i].x, ants[i].y, (ants[i].direction * 180.0 / M_PI) + 270);
     }
     glColor3f(1.0f, 1.0f, 1.0f);
+    pthread_mutex_lock(&food_list_mutex);
     for (int i = 0; i < foodPieces.size(); i++)
     {
-        double length = REC_INIT_SIZE * foodPieces[i].numOfPortions *ANT_APPETITE / 100;
+        double length = REC_INIT_SIZE * foodPieces[i].numOfPortions * ANT_APPETITE / 100;
         drawRectangle(foodPieces[i].x, foodPieces[i].y, length, length, false);
     }
+    pthread_mutex_unlock(&food_list_mutex);
     glutSwapBuffers();
 }
 
