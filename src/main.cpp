@@ -2,6 +2,7 @@
 #include "opgl.hpp"
 #define HITBOX 0.08
 #define STEP_SIZE 0.003
+#define REC_INIT_SIZE 0.05
 
 using namespace std;
 
@@ -425,7 +426,8 @@ void display()
     glColor3f(1.0f, 1.0f, 1.0f);
     for (int i = 0; i < foodPieces.size(); i++)
     {
-        drawRectangle(foodPieces[i].x, foodPieces[i].y, 0.03, 0.03, false);
+        double length = REC_INIT_SIZE * foodPieces[i].numOfPortions *ANT_APPETITE / 100;
+        drawRectangle(foodPieces[i].x, foodPieces[i].y, length, length, false);
     }
     glutSwapBuffers();
 }
