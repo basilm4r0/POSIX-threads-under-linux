@@ -1,7 +1,7 @@
 #include "local.hpp"
 #include "opgl.hpp"
 #define HITBOX 0.05
-#define STEP_SIZE 0.01
+#define STEP_SIZE 0.003
 
 using namespace std;
 
@@ -46,7 +46,7 @@ void *antLifeCycle(void *data)
     {
         //cout << "x " << ant.x << " y " << ant.y << " direction " << ant.direction / M_PI * 180 << " pheromone " << ant.pheromone << endl;
 
-        usleep(166666 / speed); // for production change to 1000000 / speed
+        usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
 
         int closestFood = -1;
         bool isOnFood = false;
@@ -193,7 +193,7 @@ void *antLifeCycle(void *data)
             while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
             {
                 ant.direction += (45 * M_PI / 180) * d; // turn 45 degrees
-                usleep(166666 / speed);                 // for production change to 1000000 / speed
+                usleep(16666 / (1 + 0.1 * speed));                 // for production change to 1000000 / speed
                 cout << "WEEEEEE" << endl;
             }
         }
