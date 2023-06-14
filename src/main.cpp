@@ -27,7 +27,7 @@ void *antLifeCycle(void *data)
     srand(pthread_self());
 
     int speed = (rand() % 10) + 1;
-    int index = 0;
+    unsigned index = 0;
     ANT ant;
     ant.x = randomDouble(-2, 2);                      // rand from -2 -> 2
     ant.y = randomDouble(-1, 1);                      // rand from -1 -> 1
