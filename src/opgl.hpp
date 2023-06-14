@@ -90,11 +90,11 @@ void renderText(const char *text, float x, float y, int size)
         // Access the glyph's bitmap
         FT_Bitmap *bitmap = &(fontFace->glyph->bitmap);
 
-        for (int row = 0; row < bitmap->rows / 2; ++row)
+        for (unsigned row = 0; row < bitmap->rows / 2; ++row)
         {
             unsigned char *topRow = bitmap->buffer + row * bitmap->width;
             unsigned char *bottomRow = bitmap->buffer + (bitmap->rows - row - 1) * bitmap->width;
-            for (int col = 0; col < bitmap->width; ++col)
+            for (unsigned col = 0; col < bitmap->width; ++col)
             {
                 unsigned char temp = topRow[col];
                 topRow[col] = bottomRow[col];

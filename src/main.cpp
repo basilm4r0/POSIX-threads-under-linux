@@ -242,18 +242,18 @@ int main(int argc, char *argv[])
     printf("RUN_TIME: %d\n", RUN_TIME);
     printf("PIECES_OF_FOOD: %d\n", PIECES_OF_FOOD);
 
-    int antsId[NUMBER_OF_ANTS];
-    int foodId;
+    // int antsId[NUMBER_OF_ANTS];
+    // int foodId;
     pthread_t antsThread[NUMBER_OF_ANTS];
     pthread_t foodThread;
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
-        antsId[i] = pthread_create(&antsThread[i], NULL, antLifeCycle, (void *)&i);
+        pthread_create(&antsThread[i], NULL, antLifeCycle, (void *)&i);
     }
-    foodId = pthread_create(&foodThread, NULL, foodCreator, 0);
+    pthread_create(&foodThread, NULL, foodCreator, 0);
 
-    int opglId = pthread_create(&foodThread, NULL, opengl, 0);
+    pthread_create(&foodThread, NULL, opengl, 0);
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
         pthread_join(antsThread[i], NULL);
@@ -413,7 +413,7 @@ void display()
     }
     glColor3f(1.0f, 1.0f, 1.0f);
     pthread_mutex_lock(&food_list_mutex);
-    for (int i = 0; i < foodPieces.size(); i++)
+    for (unsigned i = 0; i < foodPieces.size(); i++)
     {
         if (foodPieces[i].numOfPortions <= 0)
             continue;
