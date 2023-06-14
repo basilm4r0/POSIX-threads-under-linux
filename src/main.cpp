@@ -14,8 +14,9 @@ int STRONG_PHEROMONE_THRESHOLD;
 int WEAK_PHEROMONE_THRESHOLD;
 double MAX_PHEROMONE_AMOUNT;
 int ANT_APPETITE;
-int RUN_TIME;
+// int RUN_TIME;
 int PIECES_OF_FOOD;
+bool notTerminated = true;
 pthread_mutex_t ants_list_mutex;
 pthread_mutex_t food_list_mutex;
 
@@ -42,7 +43,7 @@ void *antLifeCycle(void *data)
     index = ants.size() - 1;
     pthread_mutex_unlock(&ants_list_mutex);
 
-    while (1)
+    while (notTerminated)
     {
         usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
 
@@ -202,13 +203,14 @@ void *antLifeCycle(void *data)
         ants[index].foodY = ant.foodY;
         pthread_mutex_unlock(&ants_list_mutex);
     }
+    return NULL;
 }
 
 // Food creator thread creates food every interval of time
 void *foodCreator(void *data)
 {
     srand(pthread_self());
-    while (1)
+    while (notTerminated)
     {
         int portions = ceil(100.0 / ANT_APPETITE);
 
@@ -227,6 +229,7 @@ void *foodCreator(void *data)
 
         sleep(FOOD_DWELL_TIME);
     }
+    return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -246,6 +249,7 @@ int main(int argc, char *argv[])
     // int foodId;
     pthread_t antsThread[NUMBER_OF_ANTS];
     pthread_t foodThread;
+    pthread_t openGlThread;
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
@@ -253,12 +257,14 @@ int main(int argc, char *argv[])
     }
     pthread_create(&foodThread, NULL, foodCreator, 0);
 
-    pthread_create(&foodThread, NULL, opengl, 0);
+    pthread_create(&openGlThread, NULL, opengl, 0);
 
+    sleep(RUN_TIME * 60);
+    notTerminated = false;
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
         pthread_join(antsThread[i], NULL);
 
-    pthread_join(foodThread, NULL);
+    pthread_join(openGlThread, NULL);
 
     return 0;
 }

@@ -22,6 +22,8 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <math.h>
+#include <signal.h>
+
 
 void read_constants(std::string filename);
 bool hitWall(double, double);

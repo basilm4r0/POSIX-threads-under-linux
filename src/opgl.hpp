@@ -16,8 +16,10 @@ const float PI = 3.14159265f;
 int WIN_HEIGHT;
 int WIN_WIDTH;
 int TIME_BAR;
+int RUN_TIME;
 int fontSize = 24;
 char TIME[20];
+bool terminateFlag = false;
 std::chrono::_V2::system_clock::time_point start;
 
 // FreeType library context
@@ -193,7 +195,7 @@ void drawAnt(double x, double y, double direction)
     glRotatef(direction, 0.0f, 0.0f, 1.0f);
     drawOval(0.17f / scaleDown, 0.25f / scaleDown, 100);
 
-    glTranslatef(0.0f  / scaleDown, 0.38f / scaleDown, 0.0f);
+    glTranslatef(0.0f / scaleDown, 0.38f / scaleDown, 0.0f);
     drawOval(0.13f / scaleDown, 0.15f / scaleDown, 100);
 
     glTranslatef(0.0f / scaleDown, 0.3f / scaleDown, 0.0f);
@@ -202,11 +204,11 @@ void drawAnt(double x, double y, double direction)
     /* Draw ant legs */
 
     glPushMatrix();
-    glTranslatef(0, -0.2f / scaleDown, 0.0f); // Translate to the left leg position
-    glRotatef(35.0f, 0.0f, 0.0f, 1.0f);                // Rotate the leg
-    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f);       // Translate to the center of the leg
-    glScalef(legWidth, legHeight, legWidth);           // Scale the leg dimensions
-    glutSolidCube(1.0f);                               // Cube-shaped leg
+    glTranslatef(0, -0.2f / scaleDown, 0.0f);    // Translate to the left leg position
+    glRotatef(35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
@@ -248,11 +250,11 @@ void drawAnt(double x, double y, double direction)
     //////////////////////
 
     glPushMatrix();
-    glTranslatef(0, -0.2f / scaleDown, 0.0f); // Translate to the left leg position
-    glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);              // Rotate the leg
-    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f);      // Translate to the center of the leg
-    glScalef(legWidth, legHeight, legWidth);          // Scale the leg dimensions
-    glutSolidCube(1.0f);                              // Cube-shaped leg
+    glTranslatef(0, -0.2f / scaleDown, 0.0f);    // Translate to the left leg position
+    glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);         // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
@@ -352,6 +354,12 @@ void updateTimer(int value)
     int seconds = time.count() % 60;
     sprintf(TIME, "%02d:%02d", minutes, seconds);
     // strcpy(TIME, timeStr.c_str());
+
+    if (minutes >= RUN_TIME)
+    {
+        terminateFlag = true;
+        exit(0); // TODO
+    }
 
     glutPostRedisplay();
     glutTimerFunc(20, updateTimer, 0); // 20 milliseconds between updates (approximately 60 FPS)
