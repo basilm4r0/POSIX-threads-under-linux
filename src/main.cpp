@@ -27,7 +27,6 @@ void *antLifeCycle(void *data)
     srand(pthread_self());
 
     int speed = (rand() % 10) + 1;
-    // int speed = (rand() % 10) + 1;
     int index = 0;
     ANT ant;
     ant.x = randomDouble(-2, 2);                      // rand from -2 -> 2
@@ -45,19 +44,16 @@ void *antLifeCycle(void *data)
 
     while (1)
     {
-        // cout << "x " << ant.x << " y " << ant.y << " direction " << ant.direction / M_PI * 180 << " pheromone " << ant.pheromone << endl;
-
         usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
 
         int closestFood = -1;
         bool isOnFood = false;
-        // TODO: why 5 ?
         double closestFoodDistance = 5;
 
-        // pthread_mutex_lock(&food_list_mutex);
-        // Iterate over food pieces
         for (unsigned i = 0; i < foodPieces.size(); i++)
         {
+            if (foodPieces[i].numOfPortions <= 0)
+                continue;
             double distance = sqrt(pow(ant.x - foodPieces[i].x, 2) + pow(ant.y - foodPieces[i].y, 2));
 
             if (distance <= HITBOX)
@@ -72,7 +68,6 @@ void *antLifeCycle(void *data)
                 closestFood = i;
             }
         }
-        // pthread_mutex_unlock(&food_list_mutex);
 
         // Check if on food
         if (isOnFood)
@@ -82,28 +77,21 @@ void *antLifeCycle(void *data)
             double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
             ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
 
-            while (foodPieces.size() && sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)) <= HITBOX) // Hitbox size can be changed
+            while (sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)) <= HITBOX) // Hitbox size can be changed
             {
-                // TODO: change mutex logic ?
                 pthread_mutex_lock(&foodPieces[closestFood].portions_mutex);
-                if (foodPieces[closestFood].numOfPortions == 0) // TODO
-                {
-                    break;
-                }
-                foodPieces[closestFood].numOfPortions--;
-                if (foodPieces[closestFood].numOfPortions == 0)
-                {
 
-                    // TODO: what happens when another ant is waiting for the erased piece mutex?
-                    // TODO: pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex); ???
-                    // TODO: stop sending phermones
-                    for (int k = 0; k < NUMBER_OF_ANTS - 1; k++) // TODO
+                foodPieces[closestFood].numOfPortions--;
+                if (foodPieces[closestFood].numOfPortions <= 0)
+                {
+                    pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
+                    for (int k = 0; k < NUMBER_OF_ANTS ; k++) 
                     {
-                        pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
+                        if (ants[k].foodX == foodPieces[closestFood].x && ants[k].foodY == foodPieces[closestFood].y)
+                        {
+                            ants[k].pheromone = 0;
+                        }
                     }
-                    pthread_mutex_lock(&food_list_mutex); // TODO where to put? caused other ants to stop on delay when the mutex was for all the code
-                    foodPieces.erase(foodPieces.begin() + closestFood);
-                    pthread_mutex_unlock(&food_list_mutex);
                     ant.pheromone = 0;
                     closestFood = -1;
                     break;
@@ -120,7 +108,6 @@ void *antLifeCycle(void *data)
         {
 
             ant.direction = findAngle(ant.x, ant.y, foodPieces[closestFood].x, foodPieces[closestFood].y);
-            // SEND PHERMONE
             ant.foodX = foodPieces[closestFood].x;
             ant.foodY = foodPieces[closestFood].y;
             // send strong phermone
@@ -132,7 +119,6 @@ void *antLifeCycle(void *data)
             // Check if affected by pheromone, change direction
             int antWithStrongestPheromone = -1;
             double strongestPheromone = 0;
-            // TODO: why 5?
             double distanceToAnt = 5;
             // pthread_mutex_lock(&ants_list_mutex);
             for (unsigned i = 0; i < ants.size(); i++)
@@ -198,7 +184,6 @@ void *antLifeCycle(void *data)
             else if (ant.direction < 0)
                 ant.direction += (2 * M_PI);
             usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
-            cout << "WEEEEEE" << endl;
         }
 
         if (ant.direction >= (2 * M_PI))
@@ -208,14 +193,14 @@ void *antLifeCycle(void *data)
 
         ant.x += STEP_SIZE * cos(ant.direction);
         ant.y += STEP_SIZE * sin(ant.direction);
-        // pthread_mutex_lock(&ants_list_mutex);
+        pthread_mutex_lock(&ants_list_mutex);
         ants[index].x = ant.x;
         ants[index].y = ant.y;
         ants[index].direction = ant.direction;
         ants[index].pheromone = ant.pheromone;
         ants[index].foodX = ant.foodX;
         ants[index].foodY = ant.foodY;
-        // pthread_mutex_unlock(&ants_list_mutex);
+        pthread_mutex_unlock(&ants_list_mutex);
     }
 }
 
@@ -430,6 +415,8 @@ void display()
     pthread_mutex_lock(&food_list_mutex);
     for (int i = 0; i < foodPieces.size(); i++)
     {
+        if (foodPieces[i].numOfPortions <= 0)
+            continue;
         double length = REC_INIT_SIZE * foodPieces[i].numOfPortions * ANT_APPETITE / 100;
         drawRectangle(foodPieces[i].x, foodPieces[i].y, length, length, false);
     }
