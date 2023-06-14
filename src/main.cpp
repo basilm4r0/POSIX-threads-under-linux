@@ -1,6 +1,6 @@
 #include "local.hpp"
 #include "opgl.hpp"
-#define HITBOX 0.05
+#define HITBOX 0.08
 #define STEP_SIZE 0.003
 
 using namespace std;
@@ -78,7 +78,7 @@ void *antLifeCycle(void *data)
             // send strong phermone
             // min is used so we don't have 0 for distance
             double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
-            ant.pheromone = 1 / HITBOX + 1 / distance;
+            ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
 
             while (foodPieces.size() && sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)) <= HITBOX) // Hitbox size can be changed
             {
@@ -102,6 +102,7 @@ void *antLifeCycle(void *data)
                     pthread_mutex_lock(&food_list_mutex); //TODO where to put? caused other ants to stop on delay when the mutex was for all the code
                     foodPieces.erase(foodPieces.begin() + closestFood);
                     pthread_mutex_unlock(&food_list_mutex);
+                    ant.pheromone = 0;
                     closestFood = -1;
                     break;
                 }
@@ -122,7 +123,7 @@ void *antLifeCycle(void *data)
             ant.foodY = foodPieces[closestFood].y;
             // send strong phermone
             double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
-            ant.pheromone = 1 / HITBOX + 1 / distance;
+            ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
         }
         else
         {
@@ -151,6 +152,7 @@ void *antLifeCycle(void *data)
                     distanceToAnt = distance;
                     antWithStrongestPheromone = i;
                 }
+                ant.pheromone = 0;
             }
 
             if (strongestPheromone >= STRONG_PHEROMONE_THRESHOLD)
@@ -159,20 +161,20 @@ void *antLifeCycle(void *data)
                 ant.direction = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodY, ants[antWithStrongestPheromone].foodX);
                 // TODO: to change
                 // ant.pheromone = 0.2 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
-                ant.pheromone = 1 / max(distanceToAnt, HITBOX);
+                ant.pheromone = 1 / (100 * max(distanceToAnt, HITBOX));
                 ant.foodX = ants[antWithStrongestPheromone].foodX;
                 ant.foodY = ants[antWithStrongestPheromone].foodY;
             }
             else if (antWithStrongestPheromone != -1)
             {
                 // GO TO 5 degrees closer to food
-                // double angleToFood = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodY, ants[antWithStrongestPheromone].foodX);
-                // if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
-                //     ant.direction += 5 * M_PI / 180;
-                // else
-                //     ant.direction -= 5 * M_PI / 180;
+                double angleToFood = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodY, ants[antWithStrongestPheromone].foodX);
+                if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
+                    ant.direction += 5 * M_PI / 180;
+                else
+                    ant.direction -= 5 * M_PI / 180;
 
-                // ant.pheromone = 0; // Don't send pheromone
+                ant.pheromone = 0; // Don't send pheromone
             }
             else
             {
@@ -182,21 +184,17 @@ void *antLifeCycle(void *data)
         }
         // pthread_mutex_unlock(&food_list_mutex);
 
-        if (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
-        {
-            int d = ((rand() % 2) * 2 - 1);         // get random value between -1 for CW and 1 CCW
-            ant.direction += (45 * M_PI / 180) * d; // turn 45 degrees
-            if (ant.direction > (2 * M_PI))
-                ant.direction -= (2 * M_PI);
-            else if (ant.direction < 0)
-                ant.direction += (2 * M_PI);
-            while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
-            {
-                ant.direction += (45 * M_PI / 180) * d; // turn 45 degrees
-                usleep(16666 / (1 + 0.1 * speed));                 // for production change to 1000000 / speed
-                cout << "WEEEEEE" << endl;
-            }
-        }
+       int d = ((rand() % 2) * 2 - 1);         // get random value between -1 for CW and 1 CCW
+       while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
+       {
+           ant.direction += (135 * M_PI / 180) * d; // turn 45 degrees
+           if (ant.direction > (2 * M_PI))
+               ant.direction -= (2 * M_PI);
+           else if (ant.direction < 0)
+               ant.direction += (2 * M_PI);
+           usleep(16666 / (1 + 0.1 * speed));                 // for production change to 1000000 / speed
+           cout << "WEEEEEE" << endl;
+       }
 
         if (ant.direction >= (2 * M_PI))
             ant.direction -= (2 * M_PI);
