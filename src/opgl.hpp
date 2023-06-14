@@ -308,6 +308,8 @@ void drawAnt(double x, double y, double direction)
     glPopMatrix();
 
     glPopMatrix();
+
+    glutPostRedisplay();
 }
 
 void modifyMatrix()

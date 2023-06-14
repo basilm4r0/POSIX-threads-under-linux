@@ -40,7 +40,7 @@ void *antLifeCycle(void *data)
     ants.push_back(ant);
     index = ants.size() - 1;
     pthread_mutex_unlock(&ants_list_mutex);
-
+    
     while (1)
     {
         cout << "x " << ant.x << " y " << ant.y << " direction " << ant.direction / M_PI * 180 << " pheromone " << ant.pheromone << endl;
@@ -213,6 +213,7 @@ void *antLifeCycle(void *data)
         ants[index].foodY = ant.foodY;
         // pthread_mutex_unlock(&ants_list_mutex);
     }
+    
 }
 
 // Food creator thread creates food every interval of time
@@ -426,8 +427,9 @@ void display()
     // drawAnt();
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
-        drawCircle(0.01, ants[i].x, ants[i].y);
-        // drawAnt(ants[i].x, ants[i].y, (ants[i].direction * M_PI / 180) + 90);
+        //drawCircle(0.01, ants[i].x, ants[i].y);
+        // cout<<ants[i].direction<<"\t"<<(ants[i].direction *180.0 / M_PI) + 90<<endl;
+        drawAnt(ants[i].x, ants[i].y, (ants[i].direction * 180.0 / M_PI) + 270);
     }
     glColor3f(1.0f, 1.0f, 1.0f);
     for (int i = 0; i < foodPieces.size(); i++)
