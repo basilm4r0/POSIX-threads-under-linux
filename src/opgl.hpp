@@ -21,7 +21,6 @@ int TIME_BAR;
 int RUN_TIME;
 int fontSize = 24;
 char TIME[20];
-bool terminateFlag = false;
 std::chrono::_V2::system_clock::time_point start;
 
 // FreeType library context
@@ -355,14 +354,11 @@ void updateTimer(int value)
     int minutes = time.count() / 60;
     int seconds = time.count() % 60;
     sprintf(TIME, "%02d:%02d", minutes, seconds);
-    // strcpy(TIME, timeStr.c_str());
-
-    if (minutes >= RUN_TIME)
-    {
-        terminateFlag = true;
-        exit(0); // TODO
-    }
 
     glutPostRedisplay();
+    if (minutes >= RUN_TIME)
+    {
+        return;
+    }
     glutTimerFunc(20, updateTimer, 0); // 20 milliseconds between updates (approximately 60 FPS)
 }

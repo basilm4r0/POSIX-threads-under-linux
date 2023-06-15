@@ -448,6 +448,11 @@ void display()
     drawRectangle(0, 1.25, 4, 0.5, false);
     renderText(TIME, 0, 1.15, 24);
 
+    if(!notTerminated){
+        drawRectangle(0, 0, 2, 1, true);
+        renderText("TIMEOUT", 0, 0, 60);
+    }
+
     glutSwapBuffers();
 }
 
