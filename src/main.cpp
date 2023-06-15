@@ -8,36 +8,34 @@ using namespace std;
 
 // Global Variables
 int NUMBER_OF_ANTS;
+int SPEED_LIMIT;
+int NUM_OF_DIRECTIONS;
+int CHANGE_DIRECTION_ANGLE;
 int FOOD_DWELL_TIME;
 double ANT_SMELL_DISTANCE;
 int STRONG_PHEROMONE_THRESHOLD;
 int WEAK_PHEROMONE_THRESHOLD;
-double MAX_PHEROMONE_AMOUNT;
 int ANT_APPETITE;
-// int RUN_TIME;
 int PIECES_OF_FOOD;
-bool notTerminated = true;
-pthread_mutex_t ants_list_mutex;
-pthread_mutex_t food_list_mutex;
 
+bool notTerminated = true;
 vector<FOOD> foodPieces;
 vector<ANT> ants;
+pthread_mutex_t ants_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t food_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *antLifeCycle(void *data)
 {
     srand(pthread_self());
 
-    int speed = (rand() % 10) + 1;
-    unsigned index = 0;
+    int speed = (rand() % SPEED_LIMIT) + 1;
     ANT ant;
-    ant.x = randomDouble(-2, 2);                      // rand from -2 -> 2
-    ant.y = randomDouble(-1, 1);                      // rand from -1 -> 1
-    ant.direction = ((rand() % 8) * 45) * M_PI / 180; // Angle of direction in rad
-    ant.foodX = -10;
-    ant.foodY = -10;
+    ant.x = randomDouble(-X_BORDER, X_BORDER);
+    ant.y = randomDouble(-Y_BORDER, Y_BORDER);
+    ant.direction = ((rand() % NUM_OF_DIRECTIONS) * (360.0 / NUM_OF_DIRECTIONS)) * M_PI / 180; // Angle of direction in rad
     ant.pheromone = 0;
 
-    // to get the index for the current ant
+    unsigned index = 0;
     pthread_mutex_lock(&ants_list_mutex);
     ants.push_back(ant);
     index = ants.size() - 1;
@@ -45,141 +43,56 @@ void *antLifeCycle(void *data)
 
     while (notTerminated)
     {
-        usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed
+        usleep(16666 / (1 + 0.1 * speed)); // for production change to 1000000 / speed // TODO-Shahd: Remove hardcoded numbers
 
         int closestFood = -1;
         bool isOnFood = false;
-        double closestFoodDistance = 5;
 
-        for (unsigned i = 0; i < foodPieces.size(); i++)
-        {
-            if (foodPieces[i].numOfPortions <= 0)
-                continue;
-            double distance = sqrt(pow(ant.x - foodPieces[i].x, 2) + pow(ant.y - foodPieces[i].y, 2));
+        getClosestFood(ant, &isOnFood, &closestFood);
 
-            if (distance <= HITBOX)
-            {
-                isOnFood = true;
-                closestFood = i;
-            }
-            // Check if food is within smell distance
-            else if (distance <= ANT_SMELL_DISTANCE && distance < closestFoodDistance)
-            {
-                closestFoodDistance = distance;
-                closestFood = i;
-            }
-        }
-
-        // Check if on food
         if (isOnFood)
         {
-            // send strong phermone
-            // min is used so we don't have 0 for distance
-            double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
-            ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
-
-            while (sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)) <= HITBOX) // Hitbox size can be changed
-            {
-                pthread_mutex_lock(&foodPieces[closestFood].portions_mutex);
-
-                foodPieces[closestFood].numOfPortions--;
-                if (foodPieces[closestFood].numOfPortions <= 0)
-                {
-                    pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
-                    for (int k = 0; k < NUMBER_OF_ANTS; k++)
-                    {
-                        if (ants[k].foodX == foodPieces[closestFood].x && ants[k].foodY == foodPieces[closestFood].y)
-                        {
-                            ants[k].pheromone = 0;
-                        }
-                    }
-                    ant.pheromone = 0;
-                    closestFood = -1;
-                    break;
-                }
-                else
-                {
-                    pthread_mutex_unlock(&foodPieces[closestFood].portions_mutex);
-                    sleep(1);
-                }
-            }
+            ant.pheromone = sendStrongPhermone(ant, closestFood);
+            eatFood(ant, &closestFood);
         }
-        // GO TO FOOD
         else if (closestFood != -1)
         {
 
             ant.direction = findAngle(ant.x, ant.y, foodPieces[closestFood].x, foodPieces[closestFood].y);
             ant.foodX = foodPieces[closestFood].x;
             ant.foodY = foodPieces[closestFood].y;
-            // send strong phermone
-            double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
-            ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
+            ant.pheromone = sendStrongPhermone(ant, closestFood);
         }
-        else
+        else // Check if affected by pheromone, change direction
         {
-            // Check if affected by pheromone, change direction
             int antWithStrongestPheromone = -1;
             double strongestPheromone = 0;
-            double distanceToAnt = 5;
-            // pthread_mutex_lock(&ants_list_mutex);
-            for (unsigned i = 0; i < ants.size(); i++)
-            {
-                if (i == index)
-                    continue;
-                double distance = sqrt(pow(ant.x - ants[i].x, 2) + pow(ant.y - ants[i].y, 2));
+            double distanceToAnt = sqrt(pow(2 * X_BORDER, 2) + pow(2 * Y_BORDER, 2)) + 1;
 
-                double recieved_pheromone = ants[i].pheromone / distance;
-
-                if (recieved_pheromone < WEAK_PHEROMONE_THRESHOLD)
-                {
-                    continue;
-                }
-
-                else if (recieved_pheromone > strongestPheromone)
-                {
-                    strongestPheromone = recieved_pheromone;
-                    distanceToAnt = distance;
-                    antWithStrongestPheromone = i;
-                }
-                ant.pheromone = 0;
-            }
+            getStrongestAntEffect(&index, ant, &strongestPheromone, &distanceToAnt, &antWithStrongestPheromone);
 
             if (strongestPheromone >= STRONG_PHEROMONE_THRESHOLD)
             {
-                // GO TO FOOD
                 ant.direction = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodX, ants[antWithStrongestPheromone].foodY);
-                // TODO: to change
-                // ant.pheromone = 0.2 * (MAX_PHEROMONE_AMOUNT < (1 / distanceToAnt) ? MAX_PHEROMONE_AMOUNT : 1 / distanceToAnt);
                 ant.pheromone = 1 / (100 * max(distanceToAnt, HITBOX));
                 ant.foodX = ants[antWithStrongestPheromone].foodX;
                 ant.foodY = ants[antWithStrongestPheromone].foodY;
             }
             else if (antWithStrongestPheromone != -1)
             {
-                // GO TO 5 degrees closer to food
-                double angleToFood = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodX, ants[antWithStrongestPheromone].foodY);
-                if (abs(angleToFood - ant.direction) < 5 * M_PI / 180)
-                {
-                }
-                else if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
-                    ant.direction += 5 * M_PI / 180;
-                else
-                    ant.direction -= 5 * M_PI / 180;
-
+                moveFiveDegrees(ant, &antWithStrongestPheromone);
                 ant.pheromone = 0; // Don't send pheromone
             }
             else
             {
                 ant.pheromone = 0; // Don't send pheromone
             }
-            // pthread_mutex_unlock(&ants_list_mutex);
         }
-        // pthread_mutex_unlock(&food_list_mutex);
 
         int d = ((rand() % 2) * 2 - 1); // get random value between -1 for CW and 1 CCW
         while (hitWall(ant.x + STEP_SIZE * cos(ant.direction), ant.y + STEP_SIZE * sin(ant.direction)))
         {
-            ant.direction += (135 * M_PI / 180) * d; // turn 45 degrees TODO
+            ant.direction += (CHANGE_DIRECTION_ANGLE * M_PI / 180) * d; // turn 45 degrees TODO
             if (ant.direction > (2 * M_PI))
                 ant.direction -= (2 * M_PI);
             else if (ant.direction < 0)
@@ -236,17 +149,17 @@ int main(int argc, char *argv[])
 {
     read_constants("./conf.txt");
     printf("NUMBER_OF_ANTS: %d\n", NUMBER_OF_ANTS);
+    printf("SPEED_LIMIT: %d\n", SPEED_LIMIT);
+    printf("CHANGE_DIRECTION_ANGLE: %d\n", CHANGE_DIRECTION_ANGLE);
+    printf("NUM_OF_DIRECTIONS: %d\n", NUM_OF_DIRECTIONS);
     printf("FOOD_DWELL_TIME: %d\n", FOOD_DWELL_TIME);
     printf("ANT_SMELL_DISTANCE: %f\n", ANT_SMELL_DISTANCE);
     printf("STRONG_PHEROMONE_THRESHOLD: %d\n", STRONG_PHEROMONE_THRESHOLD);
     printf("WEAK_PHEROMONE_THRESHOLD: %d\n", WEAK_PHEROMONE_THRESHOLD);
-    printf("MAX_PHEROMONE_AMOUNT: %f\n", MAX_PHEROMONE_AMOUNT);
     printf("ANT_APPETITE: %d\n", ANT_APPETITE);
     printf("RUN_TIME: %d\n", RUN_TIME);
     printf("PIECES_OF_FOOD: %d\n", PIECES_OF_FOOD);
 
-    // int antsId[NUMBER_OF_ANTS];
-    // int foodId;
     pthread_t antsThread[NUMBER_OF_ANTS];
     pthread_t foodThread;
     pthread_t openGlThread;
@@ -260,13 +173,113 @@ int main(int argc, char *argv[])
     pthread_create(&openGlThread, NULL, opengl, 0);
 
     sleep(RUN_TIME * 60);
+
     notTerminated = false;
+
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
         pthread_join(antsThread[i], NULL);
 
     pthread_join(openGlThread, NULL);
 
     return 0;
+}
+
+void getClosestFood(ANT ant, bool *isOnFood, int *closestFood)
+{
+
+    double closestFoodDistance = sqrt(pow(2 * X_BORDER, 2) + pow(2 * Y_BORDER, 2)) + 1;
+
+    for (unsigned i = 0; i < foodPieces.size(); i++)
+    {
+        if (foodPieces[i].numOfPortions <= 0)
+            continue;
+        double distance = sqrt(pow(ant.x - foodPieces[i].x, 2) + pow(ant.y - foodPieces[i].y, 2));
+
+        if (distance <= HITBOX)
+        {
+            *isOnFood = true;
+            *closestFood = i;
+        }
+        else if (distance <= ANT_SMELL_DISTANCE && distance < closestFoodDistance)
+        {
+            closestFoodDistance = distance;
+            *closestFood = i;
+        }
+    }
+}
+
+void eatFood(ANT &ant, int *closestFood)
+{
+    while (sqrt(pow(ant.x - foodPieces[*closestFood].x, 2) + pow(ant.y - foodPieces[*closestFood].y, 2)) <= HITBOX)
+    {
+        pthread_mutex_lock(&foodPieces[*closestFood].portions_mutex);
+        foodPieces[*closestFood].numOfPortions--;
+        if (foodPieces[*closestFood].numOfPortions <= 0)
+        {
+            pthread_mutex_unlock(&foodPieces[*closestFood].portions_mutex);
+            for (int k = 0; k < NUMBER_OF_ANTS; k++)
+            {
+                if (ants[k].foodX == foodPieces[*closestFood].x && ants[k].foodY == foodPieces[*closestFood].y)
+                {
+                    ants[k].pheromone = 0;
+                }
+            }
+            ant.pheromone = 0;
+            *closestFood = -1;
+            break;
+        }
+        else
+        {
+            pthread_mutex_unlock(&foodPieces[*closestFood].portions_mutex);
+            sleep(1);
+        }
+    }
+}
+
+void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone, double *distanceToAnt, int *antWithStrongestPheromone)
+{
+    for (unsigned i = 0; i < ants.size(); i++)
+    {
+        if (i == *index)
+            continue;
+
+        double distance = max(sqrt(pow(ant.x - ants[i].x, 2) + pow(ant.y - ants[i].y, 2)), HITBOX);
+
+        double recievedPheromone = ants[i].pheromone / distance;
+
+        if (recievedPheromone < WEAK_PHEROMONE_THRESHOLD)
+        {
+            continue;
+        }
+
+        else if (recievedPheromone > *strongestPheromone)
+        {
+            *strongestPheromone = recievedPheromone;
+            *distanceToAnt = distance;
+            *antWithStrongestPheromone = i;
+        }
+        ant.pheromone = 0;
+    }
+}
+
+void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone)
+{
+    double angleToFood = findAngle(ant.x, ant.y, ants[*antWithStrongestPheromone].foodX, ants[*antWithStrongestPheromone].foodY);
+    if (abs(angleToFood - ant.direction) < 5 * M_PI / 180)
+    {
+    }
+    else if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
+    {
+        ant.direction += 5 * M_PI / 180;
+    }
+    else
+        ant.direction -= 5 * M_PI / 180;
+}
+
+double sendStrongPhermone(ANT ant, int closestFood)
+{
+    double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
+    return 0.1 * (1 / HITBOX + 1 / distance);
 }
 
 // TODO: make area user definable
@@ -330,6 +343,18 @@ void read_constants(string filename)
         {
             NUMBER_OF_ANTS = stoi(value);
         }
+        else if (variableName == "SPEED_LIMIT")
+        {
+            SPEED_LIMIT = stoi(value);
+        }
+        else if (variableName == "CHANGE_DIRECTION_ANGLE")
+        {
+            CHANGE_DIRECTION_ANGLE = stoi(value);
+        }
+        else if (variableName == "NUM_OF_DIRECTIONS")
+        {
+            NUM_OF_DIRECTIONS = stoi(value);
+        }
         else if (variableName == "FOOD_DWELL_TIME")
         {
             FOOD_DWELL_TIME = stoi(value);
@@ -345,10 +370,6 @@ void read_constants(string filename)
         else if (variableName == "WEAK_PHEROMONE_THRESHOLD")
         {
             WEAK_PHEROMONE_THRESHOLD = stoi(value);
-        }
-        else if (variableName == "MAX_PHEROMONE_AMOUNT")
-        {
-            MAX_PHEROMONE_AMOUNT = stof(value); // TODO revisit
         }
         else if (variableName == "ANT_APPETITE")
         {
@@ -404,8 +425,6 @@ void display()
 
     for (int i = 0; i < NUMBER_OF_ANTS; i++)
     {
-        // drawCircle(0.01, ants[i].x, ants[i].y);
-        //  cout<<ants[i].direction<<"\t"<<(ants[i].direction *180.0 / M_PI) + 90<<endl;
         drawAnt(ants[i].x, ants[i].y, (ants[i].direction * 180.0 / M_PI) + 270);
     }
     glColor3f(1.0f, 1.0f, 1.0f);

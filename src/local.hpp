@@ -24,14 +24,6 @@
 #include <math.h>
 #include <signal.h>
 
-
-void read_constants(std::string filename);
-bool hitWall(double, double);
-double randomDouble();
-int randomInt(int a, int b);
-double randomDouble(int a, int b);
-double findAngle(double x1, double y1, double x2, double y2);
-
 typedef struct
 {
 	double x;
@@ -48,8 +40,19 @@ typedef struct
 	double pheromone;
 	double foodX;
 	double foodY;
-	pthread_mutex_t direction_mutex;
 } ANT;
+
+void read_constants(std::string filename);
+bool hitWall(double, double);
+double randomDouble();
+int randomInt(int a, int b);
+double randomDouble(int a, int b);
+double findAngle(double x1, double y1, double x2, double y2);
+double sendStrongPhermone(ANT ant, int closestFood);
+void getClosestFood(ANT ant, bool *isOnFood, int *closestFood);
+void eatFood(ANT &ant, int *closestFood);
+void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone, double *distanceToAnt, int *antWithStrongestPheromone);
+void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone);
 
 /*
 

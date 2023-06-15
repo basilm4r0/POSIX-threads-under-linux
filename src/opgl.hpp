@@ -13,6 +13,8 @@ using sec = std::chrono::duration<int>;
 using namespace std;
 
 const float PI = 3.14159265f;
+int X_BORDER = 2;
+int Y_BORDER = 1;
 int WIN_HEIGHT;
 int WIN_WIDTH;
 int TIME_BAR;

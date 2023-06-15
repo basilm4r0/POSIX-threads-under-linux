@@ -88,11 +88,11 @@ void renderText(const char *text, float x, float y, int size)
         // Access the glyph's bitmap
         FT_Bitmap *bitmap = &(fontFace->glyph->bitmap);
 
-        for (int row = 0; row < bitmap->rows / 2; ++row)
+        for (unsigned row = 0; row < bitmap->rows / 2; ++row)
         {
             unsigned char *topRow = bitmap->buffer + row * bitmap->width;
             unsigned char *bottomRow = bitmap->buffer + (bitmap->rows - row - 1) * bitmap->width;
-            for (int col = 0; col < bitmap->width; ++col)
+            for (unsigned col = 0; col < bitmap->width; ++col)
             {
                 unsigned char temp = topRow[col];
                 topRow[col] = bottomRow[col];
@@ -191,7 +191,7 @@ void drawAnt(double x, double y, double direction)
     glRotatef(direction, 0.0f, 0.0f, 1.0f);
     drawOval(0.17f / scaleDown, 0.25f / scaleDown, 100);
 
-    glTranslatef(0.0f  / scaleDown, 0.38f / scaleDown, 0.0f);
+    glTranslatef(0.0f / scaleDown, 0.38f / scaleDown, 0.0f);
     drawOval(0.13f / scaleDown, 0.15f / scaleDown, 100);
 
     glTranslatef(0.0f / scaleDown, 0.3f / scaleDown, 0.0f);
@@ -200,11 +200,11 @@ void drawAnt(double x, double y, double direction)
     /* Draw ant legs */
 
     glPushMatrix();
-    glTranslatef(0, -0.2f / scaleDown, 0.0f); // Translate to the left leg position
-    glRotatef(35.0f, 0.0f, 0.0f, 1.0f);                // Rotate the leg
-    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f);       // Translate to the center of the leg
-    glScalef(legWidth, legHeight, legWidth);           // Scale the leg dimensions
-    glutSolidCube(1.0f);                               // Cube-shaped leg
+    glTranslatef(0, -0.2f / scaleDown, 0.0f);    // Translate to the left leg position
+    glRotatef(35.0f, 0.0f, 0.0f, 1.0f);          // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
@@ -246,11 +246,11 @@ void drawAnt(double x, double y, double direction)
     //////////////////////
 
     glPushMatrix();
-    glTranslatef(0, -0.2f / scaleDown, 0.0f); // Translate to the left leg position
-    glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);              // Rotate the leg
-    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f);      // Translate to the center of the leg
-    glScalef(legWidth, legHeight, legWidth);          // Scale the leg dimensions
-    glutSolidCube(1.0f);                              // Cube-shaped leg
+    glTranslatef(0, -0.2f / scaleDown, 0.0f);    // Translate to the left leg position
+    glRotatef(-35.0f, 0.0f, 0.0f, 1.0f);         // Rotate the leg
+    glTranslatef(0.0f, -legHeight / 2.0f, 0.0f); // Translate to the center of the leg
+    glScalef(legWidth, legHeight, legWidth);     // Scale the leg dimensions
+    glutSolidCube(1.0f);                         // Cube-shaped leg
     glPopMatrix();
 
     glPushMatrix();
