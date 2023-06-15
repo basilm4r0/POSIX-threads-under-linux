@@ -53,16 +53,3 @@ void getClosestFood(ANT ant, bool *isOnFood, int *closestFood);
 void eatFood(ANT &ant, int *closestFood);
 void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone, double *distanceToAnt, int *antWithStrongestPheromone);
 void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone);
-
-/*
-
-	in ant1:
-	lock(mutex)
-	portions --;
-	unlock()
-
-	wait(1 second)
-
-	ant2:
-	lock
-*/

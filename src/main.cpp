@@ -11,6 +11,7 @@ int NUMBER_OF_ANTS;
 int SPEED_LIMIT;
 int NUM_OF_DIRECTIONS;
 int CHANGE_DIRECTION_ANGLE;
+int SMALL_ANGLE;
 int FOOD_DWELL_TIME;
 double ANT_SMELL_DISTANCE;
 int STRONG_PHEROMONE_THRESHOLD;
@@ -151,6 +152,7 @@ int main(int argc, char *argv[])
     printf("NUMBER_OF_ANTS: %d\n", NUMBER_OF_ANTS);
     printf("SPEED_LIMIT: %d\n", SPEED_LIMIT);
     printf("CHANGE_DIRECTION_ANGLE: %d\n", CHANGE_DIRECTION_ANGLE);
+    printf("SMALL_ANGLE: %d\n", SMALL_ANGLE);
     printf("NUM_OF_DIRECTIONS: %d\n", NUM_OF_DIRECTIONS);
     printf("FOOD_DWELL_TIME: %d\n", FOOD_DWELL_TIME);
     printf("ANT_SMELL_DISTANCE: %f\n", ANT_SMELL_DISTANCE);
@@ -265,15 +267,15 @@ void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone
 void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone)
 {
     double angleToFood = findAngle(ant.x, ant.y, ants[*antWithStrongestPheromone].foodX, ants[*antWithStrongestPheromone].foodY);
-    if (abs(angleToFood - ant.direction) < 5 * M_PI / 180)
+    if (abs(angleToFood - ant.direction) < SMALL_ANGLE * M_PI / 180)
     {
     }
     else if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
     {
-        ant.direction += 5 * M_PI / 180;
+        ant.direction += SMALL_ANGLE * M_PI / 180;
     }
     else
-        ant.direction -= 5 * M_PI / 180;
+        ant.direction -= SMALL_ANGLE * M_PI / 180;
 }
 
 double sendStrongPhermone(ANT ant, int closestFood)
@@ -341,15 +343,19 @@ void read_constants(string filename)
         }
         if (variableName == "NUMBER_OF_ANTS")
         {
-            NUMBER_OF_ANTS = stoi(value);
+            NUMBER_OF_ANTS = min(stoi(value), 1500);
         }
         else if (variableName == "SPEED_LIMIT")
         {
-            SPEED_LIMIT = stoi(value);
+            SPEED_LIMIT = min(stoi(value), 10000);
         }
         else if (variableName == "CHANGE_DIRECTION_ANGLE")
         {
             CHANGE_DIRECTION_ANGLE = stoi(value);
+        }
+        else if (variableName == "SMALL_ANGLE")
+        {
+            SMALL_ANGLE = stoi(value);
         }
         else if (variableName == "NUM_OF_DIRECTIONS")
         {
@@ -361,7 +367,7 @@ void read_constants(string filename)
         }
         else if (variableName == "ANT_SMELL_DISTANCE")
         {
-            ANT_SMELL_DISTANCE = stof(value); // TODO revisit
+            ANT_SMELL_DISTANCE = stof(value);
         }
         else if (variableName == "STRONG_PHEROMONE_THRESHOLD")
         {
@@ -373,7 +379,7 @@ void read_constants(string filename)
         }
         else if (variableName == "ANT_APPETITE")
         {
-            ANT_APPETITE = stoi(value);
+            ANT_APPETITE = min(stoi(value), 100);
         }
         else if (variableName == "RUN_TIME")
         {
