@@ -5,8 +5,9 @@
 #define REC_INIT_SIZE 0.05
 
 using namespace std;
+using namespace std::chrono;
 
-// Global Variables
+/* Define variables extracted from conf.txt */ 
 int NUMBER_OF_ANTS;
 int SPEED_LIMIT;
 int NUM_OF_DIRECTIONS;
@@ -20,23 +21,30 @@ int ANT_APPETITE;
 int PIECES_OF_FOOD;
 
 bool notTerminated = true;
-vector<FOOD> foodPieces;
-vector<ANT> ants;
+vector<FOOD> foodPieces; /* Contains all food pieces that appear */
+vector<ANT> ants; /* Define all the created ants */
+
+/* Define mutexes used in lists */
 pthread_mutex_t ants_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t food_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-using namespace std::chrono;
 
+/* This function contains all the functionalities of an ant */
 void *antLifeCycle(void *data)
 {
-    srand(pthread_self());
-    auto epoch = high_resolution_clock::from_time_t(0);
+    srand(pthread_self()); /* Define a random seed related to the thread using the thread ID */
 
-    int speed = (rand() % SPEED_LIMIT) + 1;
+    auto epoch = high_resolution_clock::from_time_t(0); /* start counting to use time for small degrees rotation */
+
+    int speed = (rand() % SPEED_LIMIT) + 1; /* Generate random speed */
+
     ANT ant;
-    ant.x = randomDouble(-X_BORDER, X_BORDER);
+    /* Generate random coordinations */
+    ant.x = randomDouble(-X_BORDER, X_BORDER); 
     ant.y = randomDouble(-Y_BORDER, Y_BORDER);
+    /* Generate a random direction */
     ant.direction = ((rand() % NUM_OF_DIRECTIONS) * (360.0 / NUM_OF_DIRECTIONS)) * M_PI / 180; // Angle of direction in rad
+    /*Initialize pheromone */
     removePheromone(ant);
 
     unsigned index = 0;
