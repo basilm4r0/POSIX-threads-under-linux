@@ -34,7 +34,7 @@ void *antLifeCycle(void *data)
     ant.x = randomDouble(-X_BORDER, X_BORDER);
     ant.y = randomDouble(-Y_BORDER, Y_BORDER);
     ant.direction = ((rand() % NUM_OF_DIRECTIONS) * (360.0 / NUM_OF_DIRECTIONS)) * M_PI / 180; // Angle of direction in rad
-    ant.pheromone = 0;
+    removePheromone(ant);
 
     unsigned index = 0;
     pthread_mutex_lock(&ants_list_mutex);
@@ -53,7 +53,7 @@ void *antLifeCycle(void *data)
 
         if (isOnFood)
         {
-            ant.pheromone = sendStrongPhermone(ant, closestFood);
+            sendStrongPheromone(ant, closestFood);
             eatFood(ant, &closestFood);
         }
         else if (closestFood != -1)
@@ -62,7 +62,7 @@ void *antLifeCycle(void *data)
             ant.direction = findAngle(ant.x, ant.y, foodPieces[closestFood].x, foodPieces[closestFood].y);
             ant.foodX = foodPieces[closestFood].x;
             ant.foodY = foodPieces[closestFood].y;
-            ant.pheromone = sendStrongPhermone(ant, closestFood);
+            sendStrongPheromone(ant, closestFood);
         }
         else // Check if affected by pheromone, change direction
         {
@@ -81,12 +81,12 @@ void *antLifeCycle(void *data)
             }
             else if (antWithStrongestPheromone != -1)
             {
-                moveFiveDegrees(ant, &antWithStrongestPheromone);
-                ant.pheromone = 0; // Don't send pheromone
+                rotateSmallDegrees(ant, &antWithStrongestPheromone);
+                removePheromone(ant);
             }
             else
             {
-                ant.pheromone = 0; // Don't send pheromone
+                removePheromone(ant);
             }
         }
 
@@ -108,14 +108,13 @@ void *antLifeCycle(void *data)
 
         ant.x += STEP_SIZE * cos(ant.direction);
         ant.y += STEP_SIZE * sin(ant.direction);
-        pthread_mutex_lock(&ants_list_mutex);
+
         ants[index].x = ant.x;
         ants[index].y = ant.y;
         ants[index].direction = ant.direction;
         ants[index].pheromone = ant.pheromone;
         ants[index].foodX = ant.foodX;
         ants[index].foodY = ant.foodY;
-        pthread_mutex_unlock(&ants_list_mutex);
     }
     return NULL;
 }
@@ -131,8 +130,8 @@ void *foodCreator(void *data)
         for (int i = 0; i < PIECES_OF_FOOD; i++)
         {
             FOOD food;
-            food.x = randomDouble(-2, 2); // rand from -4 -> 4
-            food.y = randomDouble(-1, 1); // rand from -2 -> 2
+            food.x = randomDouble(-X_BORDER, X_BORDER);
+            food.y = randomDouble(-Y_BORDER, Y_BORDER);
             food.numOfPortions = portions;
             food.portions_mutex = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&food_list_mutex);
@@ -226,7 +225,7 @@ void eatFood(ANT &ant, int *closestFood)
                     ants[k].pheromone = 0;
                 }
             }
-            ant.pheromone = 0;
+            removePheromone(ant);
             *closestFood = -1;
             break;
         }
@@ -260,17 +259,19 @@ void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone
             *distanceToAnt = distance;
             *antWithStrongestPheromone = i;
         }
-        ant.pheromone = 0;
+        removePheromone(ant);
     }
 }
 
-void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone)
+void rotateSmallDegrees(ANT &ant, int *antWithStrongestPheromone)
 {
     double angleToFood = findAngle(ant.x, ant.y, ants[*antWithStrongestPheromone].foodX, ants[*antWithStrongestPheromone].foodY);
     if (abs(angleToFood - ant.direction) < SMALL_ANGLE * M_PI / 180)
     {
+        return;
     }
-    else if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
+
+    if (angleToFood - ant.direction < -M_PI || ((angleToFood - ant.direction < M_PI) && (angleToFood - ant.direction > 0)))
     {
         ant.direction += SMALL_ANGLE * M_PI / 180;
     }
@@ -278,16 +279,16 @@ void moveFiveDegrees(ANT &ant, int *antWithStrongestPheromone)
         ant.direction -= SMALL_ANGLE * M_PI / 180;
 }
 
-double sendStrongPhermone(ANT ant, int closestFood)
+void sendStrongPheromone(ANT &ant, int closestFood)
 {
     double distance = max(sqrt(pow(ant.x - foodPieces[closestFood].x, 2) + pow(ant.y - foodPieces[closestFood].y, 2)), HITBOX);
-    return 0.1 * (1 / HITBOX + 1 / distance);
+    ant.pheromone = 0.1 * (1 / HITBOX + 1 / distance);
 }
 
 // TODO: make area user definable
 bool hitWall(double x, double y)
 {
-    if (x <= -2 || x >= 2 || y <= -1 || y >= 1)
+    if (x <= -X_BORDER || x >= X_BORDER || y <= -Y_BORDER || y >= Y_BORDER)
     {
         return true;
     }
@@ -301,6 +302,13 @@ double findAngle(double x1, double y1, double x2, double y2)
     if (angle < 0)
         angle += 2 * M_PI;
     return angle;
+}
+
+void removePheromone(ANT &ant)
+{
+    ant.pheromone = 0;
+    ant.foodX = -X_BORDER - 1;
+    ant.foodY = -Y_BORDER - 1;
 }
 
 // TODO remove mins
@@ -434,6 +442,7 @@ void display()
         drawAnt(ants[i].x, ants[i].y, (ants[i].direction * 180.0 / M_PI) + 270);
     }
     glColor3f(1.0f, 1.0f, 1.0f);
+
     pthread_mutex_lock(&food_list_mutex);
     for (unsigned i = 0; i < foodPieces.size(); i++)
     {
@@ -448,7 +457,8 @@ void display()
     drawRectangle(0, 1.25, 4, 0.5, false);
     renderText(TIME, 0, 1.15, 24);
 
-    if(!notTerminated){
+    if (!notTerminated)
+    {
         drawRectangle(0, 0, 2, 1, true);
         renderText("TIMEOUT", 0, 0, 60);
     }
@@ -463,7 +473,7 @@ void *opengl(void *arg)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("FreeType Text Rendering");
+    glutCreateWindow("Ants Simulation");
 
     initFreeType();
 
