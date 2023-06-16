@@ -50,6 +50,6 @@ Feel free to modify these parameters in **conf.txt** to suit your specific needs
 
 ## Team members :
 - [Aseel Sabri](https://github.com/Aseel-Sabri)
-- [Basil Mari] (https://github.com/basilm4r0)
+- [Basil Mari](https://github.com/basilm4r0)
 - [Shahd Abu-Daghash](https://github.com/shahdDaghash)
 - [Tala Alsweiti](https://github.com/talaalsweiti)
