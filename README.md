@@ -1,13 +1,11 @@
 # [POSIX-threads-under-linux](https://drive.google.com/file/d/1IiIrwXxUiTITYHnC0SMWzM9S8M4Aq6FB/view?usp=sharing)
+Welcome to the Ant Searching for Food Simulation project! This project aims to simulate the behavior of a group of ants in search of food. The simulation is designed to be simple yet engaging, providing an opportunity to observe the collective behavior of ants.
 
 ## Objective
-
+The objective of this project is to develop a multi-threaded simulation of ants searching for food. By leveraging multi-threading, our aim is to achieve a more efficient and realistic simulation that accurately represents the behavior of ants in their natural environment. Each ant is represented by a separate thread, enabling concurrent execution and independent movement of multiple ants. This implementation allows us to simulate complex behaviors, such as food detection, pheromone release, and coordinated movements toward food sources. With the use of threads, we can create an engaging and dynamic simulation that closely mimics the intricate behaviors observed in real ants during their search for food.
 
 ## Description  
 - [Project Description](https://drive.google.com/file/d/1IiIrwXxUiTITYHnC0SMWzM9S8M4Aq6FB/view?usp=sharing)
-
-## Key Features
-
 
  ## How 
  - Clone the repository to your local machine.
@@ -20,18 +18,28 @@
 &emsp; &ensp; 2- Then you can run the program using:
 
  ```
- cd 
+ cd POSIX-threads-under-linux/src
  make
-make run
+ make run
  ```
- - Check ....
+ - By observing the simulation on the OpenGL screen, you can gain insights into the collective behavior of the ants, their coordination in locating food, and the propagation of social responses through pheromones.
  
 ## Configuration
 You can customize the following parameters in the source code:
 
+* Number of ants
+* Speed range for ants
+* Food placement interval
+* Food portion size
+* Number of food pieces
+* Distance at which ants can smell food
+* Weak pheromone threshold
+* Strong pheromone threshold
+* Ant turning angle when smelling pheromones
+* Simulation duration
 
-Feel free to modify these parameters in **inputVariables.txt** to suit your specific needs.</br>
-(*The maximum vlaue for variables is 40, which is the assumed maximum number of file columns, any greater values will be assumed 40*)
+Feel free to modify these parameters in **conf.txt** to suit your specific needs.</br>
+(*The maximum vlaue for __ variables is __, any greater values will be assumed __*)
 
 ## Languages And Tools:
 
