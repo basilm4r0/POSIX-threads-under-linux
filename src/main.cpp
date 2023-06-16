@@ -202,7 +202,7 @@ void getClosestFood(ANT ant, bool *isOnFood, int *closestFood)
 
     for (unsigned i = 0; i < foodPieces.size(); i++)
     {
-        if (foodPieces[i].numOfPortions <= 0)
+        if (foodPieces[i].numOfPortions == 0)
             continue;
         double distance = sqrt(pow(ant.x - foodPieces[i].x, 2) + pow(ant.y - foodPieces[i].y, 2));
 
@@ -224,8 +224,13 @@ void eatFood(ANT &ant, int *closestFood)
     while (sqrt(pow(ant.x - foodPieces[*closestFood].x, 2) + pow(ant.y - foodPieces[*closestFood].y, 2)) <= HITBOX)
     {
         pthread_mutex_lock(&foodPieces[*closestFood].portions_mutex);
-        foodPieces[*closestFood].numOfPortions--;
-        if (foodPieces[*closestFood].numOfPortions <= 0)
+        if (foodPieces[*closestFood].numOfPortions > 0)
+        {
+            foodPieces[*closestFood].numOfPortions--;
+            pthread_mutex_unlock(&foodPieces[*closestFood].portions_mutex);
+            sleep(1);
+        }
+        else
         {
             pthread_mutex_unlock(&foodPieces[*closestFood].portions_mutex);
             for (int k = 0; k < NUMBER_OF_ANTS; k++)
@@ -238,11 +243,6 @@ void eatFood(ANT &ant, int *closestFood)
             removePheromone(ant);
             *closestFood = -1;
             break;
-        }
-        else
-        {
-            pthread_mutex_unlock(&foodPieces[*closestFood].portions_mutex);
-            sleep(1);
         }
     }
 }
