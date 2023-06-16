@@ -54,3 +54,5 @@ void eatFood(ANT &ant, int *closestFood);
 void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone, double *distanceToAnt, int *antWithStrongestPheromone);
 void rotateSmallDegrees(ANT &ant, int *antWithStrongestPheromone);
 void removePheromone(ANT &ant);
+void sendWeakPheromone(ANT &ant, int antWithStrongestPheromone, double distanceToAnt);
+
