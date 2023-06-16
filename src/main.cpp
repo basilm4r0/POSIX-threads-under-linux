@@ -25,9 +25,12 @@ vector<ANT> ants;
 pthread_mutex_t ants_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t food_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+using namespace std::chrono;
+
 void *antLifeCycle(void *data)
 {
     srand(pthread_self());
+    auto epoch = high_resolution_clock::from_time_t(0);
 
     int speed = (rand() % SPEED_LIMIT) + 1;
     ANT ant;
@@ -67,12 +70,12 @@ void *antLifeCycle(void *data)
         else // Check if affected by pheromone, change direction
         {
             int antWithStrongestPheromone = -1;
-            double strongestPheromone = 0;
+            double strongestPheromoneEffect = 0;
             double distanceToAnt = sqrt(pow(2 * X_BORDER, 2) + pow(2 * Y_BORDER, 2)) + 1;
 
-            getStrongestAntEffect(&index, ant, &strongestPheromone, &distanceToAnt, &antWithStrongestPheromone);
+            getStrongestAntEffect(&index, ant, &strongestPheromoneEffect, &distanceToAnt, &antWithStrongestPheromone);
 
-            if (strongestPheromone >= STRONG_PHEROMONE_THRESHOLD)
+            if (strongestPheromoneEffect >= STRONG_PHEROMONE_THRESHOLD)
             {
                 ant.direction = findAngle(ant.x, ant.y, ants[antWithStrongestPheromone].foodX, ants[antWithStrongestPheromone].foodY);
                 ant.pheromone = 1 / (100 * max(distanceToAnt, HITBOX));
@@ -81,7 +84,14 @@ void *antLifeCycle(void *data)
             }
             else if (antWithStrongestPheromone != -1)
             {
-                rotateSmallDegrees(ant, &antWithStrongestPheromone);
+                auto now = high_resolution_clock::now();
+                auto mseconds = duration_cast<milliseconds>(now - epoch).count();
+                if (mseconds >= 1000)
+                {
+                    rotateSmallDegrees(ant, &antWithStrongestPheromone);
+                    epoch = now;
+                }
+
                 removePheromone(ant);
             }
             else
@@ -239,6 +249,7 @@ void eatFood(ANT &ant, int *closestFood)
 
 void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone, double *distanceToAnt, int *antWithStrongestPheromone)
 {
+    removePheromone(ant);
     for (unsigned i = 0; i < ants.size(); i++)
     {
         if (i == *index)
@@ -259,7 +270,6 @@ void getStrongestAntEffect(unsigned *index, ANT &ant, double *strongestPheromone
             *distanceToAnt = distance;
             *antWithStrongestPheromone = i;
         }
-        removePheromone(ant);
     }
 }
 
