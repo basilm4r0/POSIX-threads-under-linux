@@ -9,7 +9,7 @@ The objective of this project is to develop a multi-threaded simulation of ants 
 
  ## How 
  - Clone the repository to your local machine.
- - In treminal:  </br>
+ - In terminal:  </br>
 1- Make sure you have the libfreetype6-dev library installed   </br>
   ```
  sudo apt update
@@ -28,15 +28,17 @@ The objective of this project is to develop a multi-threaded simulation of ants 
 You can customize the following parameters in the source code:
 
 * Number of ants
-* Speed range for ants
-* Food placement interval
-* Food portion size
-* Number of food pieces
-* Distance at which ants can smell food
+* Speed limit for ants
+* Number of initial directions
+* Change direction angle: *Ant turning angle when hitting the wall*
+* Small angle: *Ant turning angle when smelling weak pheromones*
+* Food dwell time
+* Ant smell distance: *Distance at which ants can smell food*
 * Weak pheromone threshold
 * Strong pheromone threshold
-* Ant turning angle when smelling pheromones
-* Simulation duration
+* Ant appetite: *Food portion size*
+* Runt time: *Simulation duration*
+* Number of food pieces
 
 Feel free to modify these parameters in **conf.txt** to suit your specific needs.</br>
 (*The maximum vlaue for __ variables is __, any greater values will be assumed __*)
