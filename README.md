@@ -41,7 +41,6 @@ You can customize the following parameters in the source code:
 * Number of food pieces
 
 Feel free to modify these parameters in **conf.txt** to suit your specific needs.</br>
-(*The maximum vlaue for __ variables is __, any greater values will be assumed __*)
 
 ## Languages And Tools:
 
